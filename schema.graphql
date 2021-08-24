@@ -12,13 +12,17 @@ type Crowdloan @entity {
 type Contribution @entity {
   id: ID!,
   crowdloan: Crowdloan!
-  account: Account!
+  account: Account!,
+  balance: BigInt!,
+  # We need to know the contribution blockHeight to subsequently
+  # determine what the incentives were at that time
+  blockHeight: BigInt!,
 }
 
 type Account @entity {
-  "Account address"
+  "Account accountId"
   id: ID!,
-  address: String!,
+  accountId: String!,
   # Contributions made by the account in the current lifecycle of the indexer
   contributions: [Contribution!]! @derivedFrom(field: "account")
 }

@@ -13,7 +13,8 @@ type EntityConstructor<T> = {
 export async function getOrCreate<T extends {id: string}>(
     store: DatabaseManager,
     entityConstructor: EntityConstructor<T>,
-    id: string
+    id: string,
+    init: Partial<T>
 ): Promise<T> {
 
     // attempt to get the entity from the database
@@ -26,6 +27,7 @@ export async function getOrCreate<T extends {id: string}>(
     if (entity == null) {
         entity = new entityConstructor()
         entity.id = id
+        Object.assign(entity, init)
     }
 
     return entity;
