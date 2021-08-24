@@ -1,0 +1,50 @@
+version: '3.0'
+description: Test manifest
+repository: https://github.com/
+hydraVersion: "4"
+
+dataSource:
+  kind: substrate
+  chain: node-template
+
+entities:
+  - generated/modules/**/*.model.ts
+
+typegen:
+  metadata:
+    source: wss://kusama-rpc.polkadot.io/
+  events:
+    - crowdloan.Contributed
+    # - crowdloan.Created
+    # - slots.Leased
+    # - auctions.BidAccepted
+    # - auctions.AuctionClosed
+    # - auctions.Reserved
+  calls:
+    - timestamp.set
+  outDir: types
+
+mappings:
+  mappingsModule: mappings
+  imports:
+    - generated/server/config # configure the processor environment (for now this is required)
+  blockInterval: '[7030323, 8023773]'
+  # events handled by the processor
+  eventHandlers:
+    # individual user contribution
+    - event: crowdloan.Contributed
+      handler: crowdloanContributed
+    # - event: crowdloan.Created
+    #   handler: crowdloanCreated
+    # signifies a parachain winning an auction
+    # - event: slots.Leased
+    #   handler: slotsLeased
+    # individual auction bid
+    # - event: auctions.BidAccepted
+    #   handler: auctionsBidAccepted
+    # concludes the auction in a separate event from the auctions.WinningOffset
+    # - event: auctions.AuctionClosed
+    #   handler: auctionsAuctionClosed
+  extrinsicHandlers:
+  preBlockHooks:
+  postBlockHooks:

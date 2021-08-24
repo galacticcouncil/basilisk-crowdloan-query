@@ -1,0 +1,32 @@
+type Crowdloan @entity {
+  # Since a single paraId can have only a single crowdloan at a time,
+  # we're using the paraId as the ID for the crowdloan. We're not interested
+  # in historical Crowdloan data
+  "Parachain paraId"
+  id: ID!,
+  parachain: Parachain!,
+  raised: BigInt!
+  contributions: [Contribution!]! @derivedFrom(field: "crowdloan")
+}
+
+type Contribution @entity {
+  id: ID!,
+  crowdloan: Crowdloan!
+  account: Account!
+}
+
+type Account @entity {
+  "Account address"
+  id: ID!,
+  address: String!,
+  # Contributions made by the account in the current lifecycle of the indexer
+  contributions: [Contribution!]! @derivedFrom(field: "account")
+}
+
+type Parachain @entity {
+  "Parachain paraId"
+  id: ID!,
+  paraId: String!
+  fundsPledged: BigInt!
+}
+
