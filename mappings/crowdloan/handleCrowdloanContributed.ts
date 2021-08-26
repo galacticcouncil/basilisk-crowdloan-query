@@ -116,78 +116,6 @@ const updateCrowdloanFunds = async (
     await store.save(crowdloan);
 }
 
-const blocksPerHour = new BN(600);
-const upsertHistoricalParachainFundsPledged = async (
-    store: DatabaseManager,
-    parachain: Parachain,
-    blockHeight: BN
-) => {
-    const id = `${parachain.paraId}-${blockHeight}`;
-    console.log('seaerching for historical entity', parachain.paraId);
-    // FIX: always returns undefined, fix the query
-    const lastHourlyHistoricalParachainFundsPledged = await store.get(HistoricalParachainFundsPledged, {
-        where: {
-            parachain: {
-                paraId: parachain.paraId
-            }
-        },
-        relations: ['parachain']
-    });
-
-    console.log('lastHourlyHistoricalParachainFundsPledged', {
-        where: {
-            parachain: {
-                paraId: parachain.paraId
-            },
-            hourly: true
-        },
-        order: {
-            blockHeight: 'DESC'
-        },
-        
-    }, lastHourlyHistoricalParachainFundsPledged);
-
-    const shouldEnsureNewHistoricalEntity = (() => {
-        // if there is no historical entity, create the first one
-        if (!lastHourlyHistoricalParachainFundsPledged) {
-            console.log('no historical');
-            return true
-        }
-        // only updating the current historical entity
-        // NOTE: could also just compare the IDs of the tntities.
-        if (blockHeight.eq(lastHourlyHistoricalParachainFundsPledged.blockHeight)) {
-            console.log('blockHeight equal');
-            return true;
-        }
-
-        // create a new historical entity, since 600 blocks / 1 hour has passed
-        const blocksSinceLastHistoricalEntity = blockHeight.sub(lastHourlyHistoricalParachainFundsPledged.blockHeight);
-        if (blocksSinceLastHistoricalEntity.lte(blocksPerHour)) {
-            console.log('1hr passed');
-            return true;
-        }
-        
-        return false;
-    })();
-    
-    console.log('shouldEnsureNewHistoricalEntity', shouldEnsureNewHistoricalEntity);
-    if (!shouldEnsureNewHistoricalEntity) return;
-
-    const historicalParachainFundsPledged = await getOrCreate(
-        store,
-        HistoricalParachainFundsPledged,
-        id, {
-            parachain,
-            blockHeight,
-            fundsPledged: new BN(0)
-        }
-    );
-
-    historicalParachainFundsPledged.fundsPledged = parachain.fundsPledged;
-
-    await store.save(historicalParachainFundsPledged);
-}
-
 const updateParachainFundsPledged = async (
     store: DatabaseManager,
     paraId: string,
@@ -208,7 +136,6 @@ const updateParachainFundsPledged = async (
     if (crowdloan.raised.gt(parachain.fundsPledged)) {
         parachain.fundsPledged = crowdloan.raised;
         await store.save(parachain);
-        await upsertHistoricalParachainFundsPledged(store, parachain, blockHeight)
     }
 }
 
