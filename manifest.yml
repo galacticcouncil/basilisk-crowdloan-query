@@ -21,6 +21,7 @@ typegen:
 
 mappings:
   mappingsModule: mappings
+  range: '[7830323, 8467200]'
   imports:
     - generated/server/config # configure the processor environment (for now this is required)
   # events handled by the processor
