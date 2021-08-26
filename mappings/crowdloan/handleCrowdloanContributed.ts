@@ -2,7 +2,7 @@ import { BN } from '@polkadot/util';
 import { EventContext, StoreContext, DatabaseManager } from '@subsquid/hydra-common';
 import { Contribution, Parachain, Crowdloan, Account } from '../../generated/model';
 import { HistoricalParachainFundsPledged } from '../../generated/modules/historical-parachain-funds-pledged/historical-parachain-funds-pledged.model';
-import { Crowdloan as CrowdloanEvents } from '../../types';
+import { Crowdloan as CrowdloanEvents } from '../../types'
 import { getOrCreate } from '../../utils/getOrCreate';
 
 /**
