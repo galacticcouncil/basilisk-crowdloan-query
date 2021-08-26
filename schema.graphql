@@ -31,6 +31,13 @@ type Parachain @entity {
   "Parachain paraId"
   id: ID!,
   paraId: String!
-  fundsPledged: BigInt!
+  fundsPledged: BigInt!,
+  historicalFundsPledged: [HistoricalParachainFundsPledged!]! @derivedFrom(field: "parachain")
 }
 
+type HistoricalParachainFundsPledged @entity {
+  id: ID!,
+  parachain: Parachain!,
+  blockHeight: BigInt!,
+  fundsPledged: BigInt!,
+}

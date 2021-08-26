@@ -14,6 +14,7 @@ typegen:
 
 mappings:
   mappingsModule: mappings
+  range: '[7830323, 8467200]'# configure the processor environment (for now this is required)
   # events handled by the processor
   eventHandlers:
     # individual user contribution
