@@ -130,7 +130,8 @@ const upsertHistoricalParachainFundsPledged = async (
             parachain: {
                 paraId: parachain.paraId
             }
-        }
+        },
+        relations: ['parachain']
     });
 
     console.log('lastHourlyHistoricalParachainFundsPledged', {
