@@ -1,5 +1,5 @@
 import { EventContext, StoreContext } from '@subsquid/hydra-common';
-import { getOrCreate } from '../../utils/getOrCreate';
+import { ensure } from '../../utils/ensure';
 
 const bidAccepted = async ({
     store,

@@ -10,7 +10,7 @@ type EntityConstructor<T> = {
  * 
  * Note: you need to persist/save the entity yourself
  */
-export async function getOrCreate<T extends {id: string}>(
+export async function ensure<T extends {id: string}>(
     store: DatabaseManager,
     entityConstructor: EntityConstructor<T>,
     id: string,

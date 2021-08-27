@@ -3,7 +3,7 @@ import { EventContext, StoreContext, DatabaseManager } from '@subsquid/hydra-com
 import { Contribution, Parachain, Crowdloan, Account } from '../../generated/model';
 import { HistoricalParachainFundsPledged } from '../../generated/modules/historical-parachain-funds-pledged/historical-parachain-funds-pledged.model';
 import { Crowdloan as CrowdloanEvents } from '../../types'
-import { getOrCreate } from '../../utils/getOrCreate';
+import { ensure } from '../../utils/ensure';
 
 /**
  * Find or create a parachain with default values,
@@ -14,7 +14,7 @@ const ensureParachain = async (
     paraId: string
 ): Promise<Parachain> => {
     // ensure the parachain with appropriate default parameters
-    const parachain = await getOrCreate<Parachain>(store, Parachain, paraId, {
+    const parachain = await ensure<Parachain>(store, Parachain, paraId, {
         paraId,
         fundsPledged: (new BN(0)),
         historicalFundsPledged: []
@@ -32,7 +32,7 @@ const ensureAccount = async (
     store: DatabaseManager,
     accountId: string,
 ): Promise<Account> => {
-    const account = await getOrCreate<Account>(store, Account, accountId, {
+    const account = await ensure<Account>(store, Account, accountId, {
         accountId,
         // if we see the account for the first time, we assume
         // it made no contributions so far, otherwise we would have persisted it already
@@ -92,7 +92,7 @@ const ensureCrowdloan = async (
     // fetch the parachain associated with the crowdloan
     const parachain = await ensureParachain(store, paraId);
     // ensure the crowdloan with appropriate default parameters
-    const crowdloan = await getOrCreate<Crowdloan>(store, Crowdloan, paraId, {
+    const crowdloan = await ensure<Crowdloan>(store, Crowdloan, paraId, {
         parachain,
         contributions: [],
         raised: new BN(0)
