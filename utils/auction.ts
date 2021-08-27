@@ -94,9 +94,7 @@ export const bestBidForRangeIndex = (
     if (!bid) return;
 
     const slotLength = slotRangeIndexToLength(slotRangeIndex);
-    console.log('best bid', slotLength.toString());
     const weightedBid = bid.balance?.mul(new BN(slotLength));
-    // console.log('weightedBid', slotRangeIndex, weightedBid.toString());
     return weightedBid;
 }
 
