@@ -8,18 +8,21 @@ typegen:
     source: wss://kusama-rpc.polkadot.io/
   events:
     - crowdloan.Contributed
+    - auctions.BidAccepted
   calls:
     - timestamp.set
   outDir: types
 
 mappings:
   mappingsModule: mappings
-  range: '[7830323, 8467200]'
+  range: '[7830323, 8004557]'
   # events handled by the processor
   eventHandlers:
     # individual user contribution
     - event: crowdloan.Contributed
       handler: handleCrowdloanContributed
+    - event: auctions.BidAccepted
+      handler: handleAuctionBidAccepted
   extrinsicHandlers:
   preBlockHooks:
   postBlockHooks:

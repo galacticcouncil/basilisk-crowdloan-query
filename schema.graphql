@@ -41,3 +41,11 @@ type HistoricalParachainFundsPledged @entity {
   blockHeight: BigInt!,
   fundsPledged: BigInt!,
 }
+
+type Bid @entity {
+  id: ID!,
+  parachain: Parachain!,
+  balance: BigInt!,
+  leasePeriodStart: BigInt!,
+  leasePeriodEnd: BigInt!
+}
