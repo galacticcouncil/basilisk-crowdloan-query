@@ -1,3 +1,4 @@
 declare module 'simple-linear-scale' {
-    export default (scaleA: number[], scaleB: number[]) => number
+    type scaleFunction = (from: number) => number;
+    export default (from: number[], to: number[]) => scaleFunction;
 }

@@ -1,31 +1,49 @@
-/// <reference path="./simple-linear-scale.d.ts" />
 import '../generated/server/config'
 import { BN } from "@polkadot/util";
 import { Bid } from "../generated/model";
-import { bestBidForRangeIndex, determineWinningBids, minimizeSlotRange, IndexedBids } from "./auction";
+import { bestBidForRangeIndex, determineWinningBids, minimizeSlotRange, slotRangeToIndex, IndexedBids, bidsIntoRangeIndexes } from "./auction";
 import { expect } from 'chai';
 
 describe('utils/auction', () => {
 
     describe('minimizeSlotRange', () => {
-        it.skip('should serialize the given lease range to a number', () => {
+        it('should serialize the given lease range to a number', () => {
             [
                 {
-                    slotRange: [new BN(13), new BN(20)],
-                    expectedMinimalSlotRange: '0-7'
+                    slotRange: {
+                        leasePeriodStart: new BN(13),
+                        leasePeriodEnd: new BN(20),
+                    },
+                    expectedMinimalSlotRange: {
+                        leasePeriodStart: new BN(0),
+                        leasePeriodEnd: new BN(7),
+                    }
                 },
                 {
-                    slotRange: [new BN(13), new BN(20)],
-                    expectedMinimalSlotRange: '0-7'
+                    slotRange: {
+                        leasePeriodStart: new BN(13),
+                        leasePeriodEnd: new BN(13),
+                    },
+                    expectedMinimalSlotRange: {
+                        leasePeriodStart: new BN(0),
+                        leasePeriodEnd: new BN(0),
+                    }
+                },
+                {
+                    slotRange: {
+                        leasePeriodStart: new BN(13),
+                        leasePeriodEnd: new BN(15),
+                    },
+                    expectedMinimalSlotRange: {
+                        leasePeriodStart: new BN(0),
+                        leasePeriodEnd: new BN(2),
+                    }
                 },
             ].map(({ slotRange, expectedMinimalSlotRange }) => {
-                const rangeLength = minimizeSlotRange(new Bid({
-                    leasePeriodStart: slotRange[0], 
-                    leasePeriodEnd: slotRange[1]
-                }));
-                expect(rangeLength).to.be.equal(expectedMinimalSlotRange);
+                const rangeLength = minimizeSlotRange(slotRange);
+                expect(rangeLength).to.be.deep.equal(expectedMinimalSlotRange);
             });
-            
+
         })
     });
 
@@ -35,168 +53,123 @@ describe('utils/auction', () => {
             expect(bestBid).to.be.undefined
         });
 
-        it.skip('should return the existing bid weighted by its range', () => {
+        it('should return the existing bid weighted by its range', () => {
             const expectedBestBid: Bid = new Bid({
-                leasePeriodStart: new BN(13),
-                leasePeriodEnd: new BN(20),
+                leasePeriodStart: new BN(0),
+                leasePeriodEnd: new BN(7),
                 balance: new BN(10)
             });
 
+            const slotRangeIndex = slotRangeToIndex({
+                leasePeriodStart:expectedBestBid.leasePeriodStart,
+                leasePeriodEnd: expectedBestBid.leasePeriodEnd
+            })
+
             const indexedBids: IndexedBids = {
-                '1': expectedBestBid
+                [slotRangeIndex]: expectedBestBid
             };
 
-            const bestBid = bestBidForRangeIndex(indexedBids, '14');
-            
+            const bestBid = bestBidForRangeIndex(indexedBids, slotRangeIndex);
+
             expect(bestBid).to.not.be.undefined;
             // TODO: find a way to type this correctly without crazy casting
-            expect((bestBid as unknown as BN).eq(new BN(140))).to.be.true
+            expect((bestBid as unknown as BN).eq(new BN(80))).to.be.true
         });
     })
 
     describe('determineWinningBids', () => {
-        it('should calculate the winning bids', async () => {
-            const currentBids: Bid[] = [
-                {
-                    "balance": "1",
-                    "leasePeriodEnd": "3",
-                    "leasePeriodStart": "3",
-                },
-              ].map(bid => ({
-                  balance: new BN(bid.balance),
-                  leasePeriodStart: new BN(bid.leasePeriodStart),
-                  leasePeriodEnd: new BN(bid.leasePeriodEnd)
-              } as Bid));
+        type dataSet = {
+            currentBids: Bid[],
+            winningBids: Bid[]
+        }[];
+        /**
+         * Dataset mimicking Polkadot runtime test data for determining/calculating winners
+         * https://github.com/paritytech/polkadot/blob/9fc3088f9e8dae5eaf062503fcefbb75a548c016/runtime/common/src/auctions.rs#L1200
+         */
+        const dataSet: dataSet = [
+            {
+                currentBids: [
+                    { balance: "1", leasePeriodStart: "3", leasePeriodEnd: "3" }
+                ],
+                winningBids: [
+                    { balance: "1", leasePeriodStart: "3", leasePeriodEnd: "3" }
+                ]
+            },
+            {
+                currentBids: [
+                    { balance: "1", leasePeriodStart: "0", leasePeriodEnd: "0" }
+                ],
+                winningBids: [
+                    { balance: "1", leasePeriodStart: "0", leasePeriodEnd: "0" }
+                ]
+            },
+            {
+                currentBids: [
+                    { balance: "2", leasePeriodStart: "0", leasePeriodEnd: "0" },
+                    { balance: "1", leasePeriodStart: "0", leasePeriodEnd: "3" },
+                    { balance: "1", leasePeriodStart: "1", leasePeriodEnd: "1" },
+                    { balance: "53", leasePeriodStart: "2", leasePeriodEnd: "2" },
+                    { balance: "1", leasePeriodStart: "3", leasePeriodEnd: "3" },
+                ],
+                winningBids: [
+                    { balance: "2", leasePeriodStart: "0", leasePeriodEnd: "0" },
+                    { balance: "1", leasePeriodStart: "1", leasePeriodEnd: "1" },
+                    { balance: "53", leasePeriodStart: "2", leasePeriodEnd: "2" },
+                    { balance: "1", leasePeriodStart: "3", leasePeriodEnd: "3" },
+                ]
+            },
+            {
+                currentBids: [
+                    { balance: "2", leasePeriodStart: "0", leasePeriodEnd: "0" },
+                    { balance: "1", leasePeriodStart: "0", leasePeriodEnd: "3" },
+                    { balance: "1", leasePeriodStart: "1", leasePeriodEnd: "1" },
+                    { balance: "53", leasePeriodStart: "2", leasePeriodEnd: "2" },
+                    { balance: "1", leasePeriodStart: "3", leasePeriodEnd: "3" },
 
-            const determinedWinners = await determineWinningBids(currentBids);
-            
-            determinedWinners.forEach(winner => {
-                console.log('---winner---');
-                console.log('start', winner.leasePeriodStart.toString());
-                console.log('end', winner.leasePeriodEnd.toString());
-                console.log('balance', winner.balance.toString())
+                    { balance: "3", leasePeriodStart: "0", leasePeriodEnd: "1" },
+                ],
+                winningBids: [
+                    { balance: "3", leasePeriodStart: "0", leasePeriodEnd: "1" },
+                    { balance: "53", leasePeriodStart: "2", leasePeriodEnd: "2" },
+                    { balance: "1", leasePeriodStart: "3", leasePeriodEnd: "3" },
+                ]
+            },
+            {
+                currentBids: [
+                    { balance: "2", leasePeriodStart: "0", leasePeriodEnd: "0" },
+                    { balance: "1", leasePeriodStart: "0", leasePeriodEnd: "3" },
+                    { balance: "1", leasePeriodStart: "1", leasePeriodEnd: "1" },
+                    { balance: "53", leasePeriodStart: "2", leasePeriodEnd: "2" },
+                    { balance: "1", leasePeriodStart: "3", leasePeriodEnd: "3" },
+
+                    { balance: "3", leasePeriodStart: "0", leasePeriodEnd: "1" },
+
+                    { balance: "100", leasePeriodStart: "0", leasePeriodEnd: "3" },
+
+                ],
+                winningBids: [
+                    { balance: "100", leasePeriodStart: "0", leasePeriodEnd: "3" },
+                ]
+            }
+        ].map(data => ({
+            currentBids: data.currentBids.map(bid => ({
+                balance: new BN(bid.balance),
+                leasePeriodStart: new BN(bid.leasePeriodStart),
+                leasePeriodEnd: new BN(bid.leasePeriodEnd)
+            } as Bid)),
+            winningBids: data.winningBids.map(bid => ({
+                balance: new BN(bid.balance),
+                leasePeriodStart: new BN(bid.leasePeriodStart),
+                leasePeriodEnd: new BN(bid.leasePeriodEnd)
+            } as Bid))
+        }));
+
+        it('should determine winning bids', () => {
+            dataSet.forEach(data => {
+                const indexedBids = bidsIntoRangeIndexes(data.currentBids);
+                const winningBids = determineWinningBids(indexedBids);
+                expect(winningBids).to.be.deep.equal(data.winningBids);
             })
-        })
-
-        it('should calculate the winning bids', async () => {
-            const currentBids: Bid[] = [
-                // {
-                //     "leasePeriodStart": "3",
-                //     "leasePeriodEnd": "3",
-                //     "balance": "2",
-                // },
-
-                // {
-                //     "leasePeriodStart": "0",
-                //     "leasePeriodEnd": "0",
-                //     "balance": "1",
-                // },
-
-                // works and returns 4 winners
-                // {
-                //     "leasePeriodStart": "0",
-                //     "leasePeriodEnd": "0",
-                //     "balance": "2",
-                // },
-                // {
-                //     "leasePeriodStart": "0",
-                //     "leasePeriodEnd": "3",
-                //     "balance": "1",
-                // },
-                // {
-                //     "leasePeriodStart": "1",
-                //     "leasePeriodEnd": "1",
-                //     "balance": "1",
-                // },
-                // {
-                //     "leasePeriodStart": "2",
-                //     "leasePeriodEnd": "2",
-                //     "balance": "53",
-                // },
-                // {
-                //     "leasePeriodStart": "3",
-                //     "leasePeriodEnd": "3",
-                //     "balance": "1",
-                // },
-
-                // works and returns 3 winners
-                // {
-                //     "leasePeriodStart": "0",
-                //     "leasePeriodEnd": "0",
-                //     "balance": "2",
-                // },
-                // {
-                //     "leasePeriodStart": "0",
-                //     "leasePeriodEnd": "3",
-                //     "balance": "1",
-                // },
-                // {
-                //     "leasePeriodStart": "1",
-                //     "leasePeriodEnd": "1",
-                //     "balance": "1",
-                // },
-                // {
-                //     "leasePeriodStart": "2",
-                //     "leasePeriodEnd": "2",
-                //     "balance": "53",
-                // },
-                // {
-                //     "leasePeriodStart": "3",
-                //     "leasePeriodEnd": "3",
-                //     "balance": "1",
-                // },
-                // {
-                //     "leasePeriodStart": "0",
-                //     "leasePeriodEnd": "1",
-                //     "balance": "3",
-                // },
-
-                // works and returns 1 winner
-                {
-                    "leasePeriodStart": "0",
-                    "leasePeriodEnd": "0",
-                    "balance": "2",
-                },
-                {
-                    "leasePeriodStart": "1",
-                    "leasePeriodEnd": "1",
-                    "balance": "1",
-                },
-                {
-                    "leasePeriodStart": "2",
-                    "leasePeriodEnd": "2",
-                    "balance": "53",
-                },
-                {
-                    "leasePeriodStart": "3",
-                    "leasePeriodEnd": "3",
-                    "balance": "1",
-                },
-                {
-                    "leasePeriodStart": "0",
-                    "leasePeriodEnd": "1",
-                    "balance": "3",
-                },
-                {
-                    "leasePeriodStart": "0",
-                    "leasePeriodEnd": "3",
-                    "balance": "100",
-                },
-                
-              ].map(bid => ({
-                  balance: new BN(bid.balance),
-                  leasePeriodStart: new BN(bid.leasePeriodStart),
-                  leasePeriodEnd: new BN(bid.leasePeriodEnd)
-              } as Bid));
-
-            const determinedWinners = await determineWinningBids(currentBids);
-            
-            determinedWinners.forEach(winner => {
-                console.log('---winner---');
-                console.log('start', winner.leasePeriodStart.toString());
-                console.log('end', winner.leasePeriodEnd.toString());
-                console.log('balance', winner.balance.toString())
-            })
-        })
+        });
     });
 })
