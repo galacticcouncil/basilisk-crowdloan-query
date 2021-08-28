@@ -9,6 +9,7 @@ typegen:
   events:
     - crowdloan.Contributed
     - auctions.BidAccepted
+    - auctions.AuctionClosed
     - slots.Leased
   calls:
     - timestamp.set
@@ -38,21 +39,25 @@ mappings:
   # since first crowdloan to auction 2 end
   # range: '[7828270, 8123989]'
   # since first crowdloan to auction 3 end
-  range: '[7828270, 8224041]'
+  # range: '[7828270, 8224041]'
+  # slot leased at end of auction 3
+  range: '[8200041, 8224041]'
   # events handled by the processor
   eventHandlers:
     # individual user contribution
-    - event: crowdloan.Contributed
-      handler: handleCrowdloanContributed
+    # - event: crowdloan.Contributed
+      # handler: handleCrowdloanContributed
     # TODO:
     # when auction ends, clear up all bids
     # when a slot is leased, mark a parachain as an auction winner
     # https://kusama.subscan.io/block/8123989?tab=event 
     # auctionClosed, slotLeased and winningOffset all in the same block
-    # - event: auctions.BidAccepted
-      # handler: handleAuctionBidAccepted
+    - event: auctions.BidAccepted
+      handler: handleAuctionBidAccepted
     # - event: slots.Leased
       # handler: handleSlotsLeased
+    - event: auctions.AuctionClosed
+      handler: handleAuctionClosed
   extrinsicHandlers:
   preBlockHooks:
   postBlockHooks:
