@@ -9,21 +9,51 @@ typegen:
   events:
     - crowdloan.Contributed
     - auctions.BidAccepted
+    - slots.Leased
   calls:
     - timestamp.set
   outDir: types
 
 mappings:
   mappingsModule: mappings
-  range: '[7830323, 8004557]'
+  # auction 1 - start to real auction end
+  # range: '[7830323, 8004557]'
+  # auction 2 - start to real auction end
+  # range: '[8024552, 8085863]'
+  # auction 3 - start to real auction end
+  # range: '[8124516, 8209096]'
+  # auction 4 - start to real auction end
+  # range: '[8224581, 8313301]'
+  # auction 5 - start to real auction end
+  # range: '[8324750, 8421690]'
+  # auction 1-5 to real auction 5 end
+  # range: '[7830323, 8421690]'
+  # [Production for auction batch 2] SherpaX (2013) crowdloan start 
+  # range: '[8857942, )'
+  # production testing range until saturday 8pm
+  # range: '[8857942, 8981148]'
+  # range: '[8857942, )'
+  # since first crowdloan to auction 1 end
+  # range: '[7828270, 8023773]'
+  # since first crowdloan to auction 2 end
+  # range: '[7828270, 8123989]'
+  # since first crowdloan to auction 3 end
+  range: '[7828270, 8224041]'
   # events handled by the processor
   eventHandlers:
     # individual user contribution
     - event: crowdloan.Contributed
       handler: handleCrowdloanContributed
-    - event: auctions.BidAccepted
-      handler: handleAuctionBidAccepted
+    # TODO:
+    # when auction ends, clear up all bids
+    # when a slot is leased, mark a parachain as an auction winner
+    # https://kusama.subscan.io/block/8123989?tab=event 
+    # auctionClosed, slotLeased and winningOffset all in the same block
+    # - event: auctions.BidAccepted
+      # handler: handleAuctionBidAccepted
+    # - event: slots.Leased
+      # handler: handleSlotsLeased
   extrinsicHandlers:
   preBlockHooks:
   postBlockHooks:
-    - handler: handlePostBlock
+    # - handler: handlePostBlock

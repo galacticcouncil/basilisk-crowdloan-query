@@ -1,7 +1,7 @@
 import '../generated/server/config'
 import { BN } from "@polkadot/util";
 import { Bid } from "../generated/model";
-import { bestBidForRangeIndex, determineWinningBids, minimizeSlotRange, slotRangeToIndex, IndexedBids, bidsIntoRangeIndexes } from "./auction";
+import { bestBidForRangeIndex, determineWinningBids, minimizeSlotRange, slotRangeToIndex, IndexedBids, bidsIntoRangeIndexes, determineWinningBidsFromCurrentBids } from "./auction";
 import { expect } from 'chai';
 
 describe('utils/auction', () => {
@@ -172,4 +172,150 @@ describe('utils/auction', () => {
             })
         });
     });
+
+    describe('winner calculation from past live auction data', () => {
+        const toBid = (bid: any) => new Bid({
+            ...bid,
+            leasePeriodStart: new BN(bid.leasePeriodStart),
+            leasePeriodEnd: new BN(bid.leasePeriodEnd),
+            balance: new BN(bid.balance)
+        });
+
+        describe('auction 1 winner calculation', () => {
+            const bids = [
+                {
+                  "id": "13-15",
+                  "leasePeriodEnd": "15",
+                  "leasePeriodStart": "13",
+                  "parachainId": "2012",
+                  "balance": "1000000000000"
+                },
+                {
+                  "id": "13-20",
+                  "leasePeriodEnd": "20",
+                  "leasePeriodStart": "13",
+                  "parachainId": "2000",
+                  "balance": "491752906100722948"
+                },
+                {
+                  "id": "16-20",
+                  "leasePeriodEnd": "20",
+                  "leasePeriodStart": "16",
+                  "parachainId": "2012",
+                  "balance": "1234500000000"
+                }
+            ].map(toBid)
+    
+            it('should select parachain 2012 and its bid as the winner', () => {
+                 const winningBids = determineWinningBidsFromCurrentBids(bids);
+                 expect(winningBids.length).to.be.equal(1);
+                 // winner should be the second bid
+                 expect(winningBids[0]).to.be.deep.equal(bids[1]);
+            });
+        });
+
+        describe('auction 2 winner calculation', () => {
+            const bids = [
+                {
+                  "id": "13-15",
+                  "leasePeriodEnd": "15",
+                  "leasePeriodStart": "13",
+                  "parachainId": "2012",
+                  "balance": "1234500000000"
+                },
+                {
+                  "id": "16-20",
+                  "leasePeriodEnd": "20",
+                  "leasePeriodStart": "16",
+                  "parachainId": "2009",
+                  "balance": "124000000000"
+                },
+                {
+                  "id": "13-20",
+                  "leasePeriodEnd": "20",
+                  "leasePeriodStart": "13",
+                  "parachainId": "2023",
+                  "balance": "176484922879171724"
+                }
+              ].map(toBid)
+    
+            it('should select parachain 2023 and its bid as the winner', () => {
+                 const winningBids = determineWinningBidsFromCurrentBids(bids);
+                 expect(winningBids.length).to.be.equal(1);
+                 // winner should be the second bid
+                 expect(winningBids[0]).to.be.deep.equal(bids[2]);
+            });
+        });
+
+        describe('auction 3 winner calculation', () => {
+            const bids = [
+                {
+                  "id": "13-20",
+                  "leasePeriodEnd": "20",
+                  "leasePeriodStart": "13",
+                  "parachainId": "2007",
+                  "balance": "137023971757623070"
+                }
+              ].map(toBid)
+    
+            it('should select parachain 2007 and its bid as the winner', () => {
+                 const winningBids = determineWinningBidsFromCurrentBids(bids);
+                 expect(winningBids.length).to.be.equal(1);
+                 // winner should be the second bid
+                 expect(winningBids[0]).to.be.deep.equal(bids[0]);
+            });
+        });
+
+        describe('auction 4 winner calculation', () => {
+            const bids = [
+                {
+                  "id": "13-13",
+                  "leasePeriodEnd": "13",
+                  "leasePeriodStart": "13",
+                  "parachainId": "2078",
+                  "balance": "1199999999000"
+                },
+                {
+                  "id": "13-20",
+                  "leasePeriodEnd": "20",
+                  "leasePeriodStart": "13",
+                  "parachainId": "2004",
+                  "balance": "130003918977569619"
+                }
+              ].map(toBid)
+    
+            it('should select parachain 2004 and its bid as the winner', () => {
+                 const winningBids = determineWinningBidsFromCurrentBids(bids);
+                 expect(winningBids.length).to.be.equal(1);
+                 // winner should be the second bid
+                 expect(winningBids[0]).to.be.deep.equal(bids[1]);
+            });
+        });
+
+        describe('auction 5 winner calculation', () => {
+            const bids = [
+                {
+                  "id": "13-13",
+                  "leasePeriodEnd": "13",
+                  "leasePeriodStart": "13",
+                  "parachainId": "2078",
+                  "balance": "3091723333068"
+                },
+                {
+                  "id": "13-20",
+                  "leasePeriodEnd": "20",
+                  "leasePeriodStart": "13",
+                  "parachainId": "2001",
+                  "balance": "136060616110084960"
+                }
+              ].map(toBid)
+    
+            it('should select parachain 2004 and its bid as the winner', () => {
+                 const winningBids = determineWinningBidsFromCurrentBids(bids);
+                 expect(winningBids.length).to.be.equal(1);
+                 // winner should be the second bid
+                 expect(winningBids[0]).to.be.deep.equal(bids[1]);
+            });
+        });
+    })
 })

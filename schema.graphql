@@ -32,6 +32,7 @@ type Parachain @entity {
   id: ID!,
   paraId: String!
   fundsPledged: BigInt!,
+  hasWonAnAuction: Boolean!,
   historicalFundsPledged: [HistoricalParachainFundsPledged!]! @derivedFrom(field: "parachain")
 }
 

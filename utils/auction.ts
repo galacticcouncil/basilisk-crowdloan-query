@@ -1,7 +1,7 @@
 /// <reference path="simple-linear-scale.d.ts"/>
 import { BN } from '@polkadot/util';
 import { DatabaseManager } from '@subsquid/hydra-common';
-import { Bid } from '../generated/model';
+import { Bid, Parachain } from '../generated/model';
 import { ensure } from "./ensure"
 import { ensureParachain } from './parachain';
 import { times, findKey, partial, isEqual } from 'lodash';
@@ -27,13 +27,26 @@ export const ensureBid = async (
         leasePeriodStart,
         leasePeriodEnd
     });
-
-    // update the bid if it already existed before
-    bid.parachain = parachain;
-    bid.balance = balance;
-
+    
     await store.save(bid);
+    return { bid, parachain };
 };
+
+export const upsertBid = async (
+    store: DatabaseManager,
+    id: string,
+    balance: BN,
+    parachain: Parachain
+) => {
+    const bid = await store.get(Bid, { where: { id }});
+    // update the bid with latest parachain and balance if it already existed
+    if (bid && balance.gt(bid.balance)){
+        bid.parachain = parachain;
+        bid.balance = balance;
+        
+        await store.save(bid);
+    }
+}
 
 /**
  * Reimplementation of `calculate_winners` from the Polkadot auction module
@@ -123,15 +136,6 @@ export const bestBidForRangeIndex = (
 }
 
 /**
- * Determine winning bids after transforming the currently in-db-indexed bids, into a object
- * that uses unique slot range combinations as indexes, in order to be consumed
- * by the winner calculation algorithm.
- */
-export const determineWinningBidsFromCurrentBids = (
-    currentBids: Bid[]
-): IndexedBids => bidsIntoRangeIndexes(currentBids);
-
-/**
  * Logis for determining/calculating winning bids replicated from the
  * Polkadot runtime. Iterates over slot range combination selecting
  * the most suitable/winning bids as a result.
@@ -207,3 +211,22 @@ export const determineWinningBids = (
 
     return winningBids;
 }
+
+
+/**
+ * Determine winning bids after transforming the currently in-db-indexed bids, into a object
+ * that uses unique slot range combinations as indexes, in order to be consumed
+ * by the winner calculation algorithm.
+ */
+ export const determineWinningBidsFromCurrentBids = (
+    bids: Bid[]
+): Bid[] => {
+    bids = bids.map(bid => {
+        const minimizedSlotRange = minimizeSlotRange(bid);
+        bid.leasePeriodStart = minimizedSlotRange.leasePeriodStart;
+        bid.leasePeriodEnd = minimizedSlotRange.leasePeriodEnd;
+        return bid;
+    })
+    const indexedBids = bidsIntoRangeIndexes(bids);
+    return determineWinningBids(indexedBids);
+};

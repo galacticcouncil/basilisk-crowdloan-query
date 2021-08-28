@@ -21,6 +21,7 @@ export const ensureParachain = async (
     const parachain = await ensure<Parachain>(store, Parachain, paraId, {
         paraId,
         fundsPledged: (new BN(0)),
+        hasWonAnAuction: false,
         historicalFundsPledged: []
     });
     
