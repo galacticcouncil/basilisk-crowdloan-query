@@ -51,7 +51,21 @@ type Bid @entity {
   leasePeriodEnd: BigInt!
 }
 
-# type Chronicle @entity {
-#   id: ID!,
-#   mostRecentAuctionStart: BigInt!
-# }
+type Chronicle @entity {
+  id: ID!,
+  # TODO: use stateSubscription.lastCompletedBlock instead
+  lastProcessedBlock: BigInt!,
+  mostRecentAuctionStart: BigInt!,
+}
+
+type Incentive @entity {
+  blockHeight: BigInt!,
+  leadPercentageRate: BigInt!,
+  siblingParachain: Parachain
+}
+
+type HistoricalIncentive @entity {
+  blockHeight: BigInt!,
+  leadPercentageRate: BigInt!
+  siblingParachain: Parachain
+}

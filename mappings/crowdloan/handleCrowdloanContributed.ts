@@ -64,10 +64,12 @@ const handleCrowdloanContributed = async ({
     // ensure we have a crowdloan to assign to the contribution
     let crowdloan = await ensureCrowdloan(store, paraId);
 
-    // account the current contribution towards the crowdloan raised funds
-    await updateCrowdloanFunds(store, crowdloan, balance);
-    // persist the contribution as its own entity
-    await createContribution(store, crowdloan, accountId, balance, blockHeight);
+    await Promise.all([
+        // account the current contribution towards the crowdloan raised funds
+        await updateCrowdloanFunds(store, crowdloan, balance),
+        // persist the contribution as its own entity
+        await createContribution(store, crowdloan, accountId, balance, blockHeight)
+    ]);
 
     // TODO: do this every block, mark hourly aggregates
     await updateParachainFundsPledged(store, paraId);

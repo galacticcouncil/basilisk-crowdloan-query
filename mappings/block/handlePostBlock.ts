@@ -1,6 +1,8 @@
 import { BN } from '@polkadot/util';
 import { BlockContext, StoreContext, DatabaseManager } from '@subsquid/hydra-common';
 import { Parachain } from '../../generated/model';
+import { updateChronicle } from '../../utils/chronicle';
+import { determineIncentives } from '../../utils/incentive';
 import { shouldEnsureHistoricalParachainFundsPledged, createHistoricalParachainFundsPledged } from '../../utils/parachain';
 
 const handlePostBlock = async ({
@@ -8,6 +10,12 @@ const handlePostBlock = async ({
     block
 }: BlockContext & StoreContext) => {
     const blockHeight = new BN(block.height);
+
+    await updateChronicle(store, {
+        lastProcessedBlock: blockHeight
+    });
+
+    await determineIncentives(store, blockHeight);
 
     // check last historical entry is older >= 1hr
     // if you do this per parachain, you will end up with time discrepancies since the parachains are created at different times

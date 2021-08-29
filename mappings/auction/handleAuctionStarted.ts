@@ -1,6 +1,9 @@
 
+import { BN } from '@polkadot/util';
 import { EventContext, StoreContext, DatabaseManager } from '@subsquid/hydra-common';
 import { Bid } from '../../generated/model';
+import { Auctions } from '../../types';
+import { updateChronicle } from '../../utils/chronicle';
 
 /**
  * When an auction starts, we need to save its starting block
@@ -9,11 +12,13 @@ import { Bid } from '../../generated/model';
  */
 const handleAuctionStarted = async ({
     store,
-    event
+    block
 }: StoreContext & EventContext) => {
-    const allBids = await store.getMany(Bid, {});
-    const deleteAllBids = allBids.map(bid => store.remove(bid));
-    return Promise.all(deleteAllBids);
+    const blockHeight = new BN(block.height);
+
+    await updateChronicle(store, {
+        mostRecentAuctionStart: blockHeight
+    });
 }
 
 export default handleAuctionStarted;

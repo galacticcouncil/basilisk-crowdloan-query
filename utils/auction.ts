@@ -32,7 +32,7 @@ export const ensureBid = async (
     return { bid, parachain };
 };
 
-export const upsertBid = async (
+export const updateBid = async (
     store: DatabaseManager,
     id: string,
     balance: BN,

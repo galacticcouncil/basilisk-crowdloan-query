@@ -4,6 +4,7 @@ import handleAuctionBidAccepted from './auction/handleBidAccepted';
 import handleSlotsLeased from './slots/handleSlotsLeased';
 import handleAuctionClosed from './auction/handleAuctionClosed';
 import handleAuctionStarted from './auction/handleAuctionStarted';
+import handlePreBlockGenesis from './block/handlePreBlockGenesis';
 
 export {
   handleCrowdloanContributed,
@@ -11,5 +12,6 @@ export {
   handleAuctionBidAccepted,
   handleSlotsLeased,
   handleAuctionClosed,
-  handleAuctionStarted
+  handleAuctionStarted,
+  handlePreBlockGenesis,
 }
