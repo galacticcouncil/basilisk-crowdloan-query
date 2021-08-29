@@ -10,6 +10,7 @@ typegen:
     - crowdloan.Contributed
     - auctions.BidAccepted
     - auctions.AuctionClosed
+    - auctions.AuctionStarted
     - slots.Leased
   calls:
     - timestamp.set
@@ -60,6 +61,8 @@ mappings:
       # handler: handleSlotsLeased
     # - event: auctions.AuctionClosed
       # handler: handleAuctionClosed
+    - event: auctions.AuctionStarted
+      handler: handleAuctionStarted
   extrinsicHandlers:
   preBlockHooks:
   postBlockHooks:

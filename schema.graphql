@@ -50,3 +50,8 @@ type Bid @entity {
   leasePeriodStart: BigInt!,
   leasePeriodEnd: BigInt!
 }
+
+# type Chronicle @entity {
+#   id: ID!,
+#   mostRecentAuctionStart: BigInt!
+# }
