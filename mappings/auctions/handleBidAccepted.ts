@@ -7,9 +7,8 @@ import { ensure } from '../../utils/ensure';
 const handleAuctionBidAccepted = async ({
     store,
     event,
-    block
 }: EventContext & StoreContext) => {
-    const {,
+    const {
         paraId,
         balance,
         leasePeriodStart,
