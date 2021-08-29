@@ -41,7 +41,9 @@ mappings:
   # since first crowdloan to auction 3 end
   # range: '[7828270, 8224041]'
   # slot leased at end of auction 3
-  range: '[8200041, 8224041]'
+  # range: '[8200041, 8224041]'
+  # best bid at real auction 3 end
+  range: '[8200041, 8209096]'
   # events handled by the processor
   eventHandlers:
     # individual user contribution
@@ -56,8 +58,8 @@ mappings:
       handler: handleAuctionBidAccepted
     # - event: slots.Leased
       # handler: handleSlotsLeased
-    - event: auctions.AuctionClosed
-      handler: handleAuctionClosed
+    # - event: auctions.AuctionClosed
+      # handler: handleAuctionClosed
   extrinsicHandlers:
   preBlockHooks:
   postBlockHooks:

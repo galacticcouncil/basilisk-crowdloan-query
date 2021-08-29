@@ -4,7 +4,7 @@ import { DatabaseManager } from '@subsquid/hydra-common';
 import { Bid, Parachain } from '../generated/model';
 import { ensure } from "./ensure"
 import { ensureParachain } from './parachain';
-import { times, findKey, partial, isEqual } from 'lodash';
+import { times, findKey, partial, isEqual, groupBy, find } from 'lodash';
 import linearScale from 'simple-linear-scale'
 
 /**
@@ -43,7 +43,7 @@ export const upsertBid = async (
     if (bid && balance.gt(bid.balance)){
         bid.parachain = parachain;
         bid.balance = balance;
-        
+
         await store.save(bid);
     }
 }
@@ -95,7 +95,7 @@ export const slotRangeToIndex = ({
 }: SlotRange) => slotRangePairing[`${leasePeriodStart}-${leasePeriodEnd}`]
 
 const slotRangeScale = linearScale(targetLeasePeriod, [0, leasePeriodsPerSlot - 1]);
-// this function will transform e.g. 13-20 to 0-7
+// this function will transform e.g. 13-20 to 0-7, same as runtime's SlotRange::new_bounded
 export const minimizeSlotRange = ({
     leasePeriodStart,
     leasePeriodEnd,
@@ -230,3 +230,52 @@ export const determineWinningBids = (
     const indexedBids = bidsIntoRangeIndexes(bids);
     return determineWinningBids(indexedBids);
 };
+
+/**
+ * In case someone decides to place a manual bid outside of the crowdloan,
+ * we need to be able to account for it as funds pledged by the given parachain.
+ */
+export const upsertFundsPledgedWithWinningBids = async (
+    store: DatabaseManager,
+) => {
+    const allBids = await store.getMany(Bid, {
+        relations: ['parachain']
+    });
+    const winningBids = determineWinningBidsFromCurrentBids(allBids);
+    const winningBidsByParachain = groupBy(winningBids, bid => bid.parachain.id);
+
+    const winningParachainIDs = Object.keys(winningBidsByParachain);
+    const winningParachains = await store.getMany(Parachain, {
+        // array of where clauses containing the winning paraIDs acts as an 'OR' statement
+        where: winningParachainIDs.map(id => ({ id }))
+    });
+
+    const winningParachainsFundsPledged = winningParachainIDs
+        .map(paraId => {
+            const sumOfBids = winningBidsByParachain[paraId]
+                .reduce((sum, bid) => sum.add(bid.balance), new BN(0));
+
+            return {
+                paraId,
+                fundsPledged: sumOfBids
+            };
+        });
+    
+    const updateWinningParachainsFundsPledged = winningParachainsFundsPledged
+        .map(({ paraId, fundsPledged}, i) => {
+            const parachain = find(winningParachains, { id: paraId });
+            /**
+             * If fundsPledged from the winning bids for the given paraId
+             * are greater than the fundsPledged currently stored, replace them.
+             * 
+             * This covers the case when there is a manual bid higher than the 
+             * crowdloan amount raised.
+             */
+            if (parachain && parachain.fundsPledged.lt(fundsPledged)) {
+                parachain.fundsPledged = fundsPledged;
+                return store.save(parachain);
+            }
+        })
+
+    await Promise.all(updateWinningParachainsFundsPledged);
+}

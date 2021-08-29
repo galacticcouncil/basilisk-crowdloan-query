@@ -1,6 +1,7 @@
 import { EventContext, StoreContext } from '@subsquid/hydra-common';
+import { Bid } from '../../generated/model';
 import { Auctions } from '../../types/auctions';
-import { ensureBid, upsertBid } from '../../utils/auction';
+import { ensureBid, upsertBid, upsertFundsPledgedWithWinningBids } from '../../utils/auction';
 import { ensure } from '../../utils/ensure';
 
 const handleAuctionBidAccepted = async ({
@@ -8,8 +9,7 @@ const handleAuctionBidAccepted = async ({
     event,
     block
 }: EventContext & StoreContext) => {
-    const {
-        accountId,
+    const {,
         paraId,
         balance,
         leasePeriodStart,
@@ -47,5 +47,8 @@ const handleAuctionBidAccepted = async ({
         balance,
         parachain
     )
+    
+    // ensure that the winning bids are accounted for as fundsPledged
+    await upsertFundsPledgedWithWinningBids(store);
 }
 export default handleAuctionBidAccepted;
