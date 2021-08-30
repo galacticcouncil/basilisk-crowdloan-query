@@ -7,6 +7,9 @@ import { ensureParachain } from './parachain';
 import { times, findKey, partial, isEqual, groupBy, find } from 'lodash';
 import linearScale from 'simple-linear-scale'
 
+if (!process.env.ENDING_PERIOD_LENGTH) throw new Error("env.ENDING_PERIOD_LENGTH is not specified");
+export const auctionEndingPeriodLength = new BN(process.env.ENDING_PERIOD_LENGTH || "");
+
 /**
  * Find or create, and then upsert a bid 
  * with a specific slot range as ID

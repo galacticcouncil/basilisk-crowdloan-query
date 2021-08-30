@@ -57,17 +57,19 @@ type Chronicle @entity {
   id: ID!,
   # TODO: use stateSubscription.lastCompletedBlock instead
   lastProcessedBlock: BigInt!,
-  mostRecentAuctionStart: BigInt!,
+  mostRecentAuctionStart: BigInt,
+  mostRecentAuctionClosingStart: BigInt
 }
 
 type Incentive @entity {
   blockHeight: BigInt!,
   leadPercentageRate: BigInt!,
-  siblingParachain: Parachain
+  siblingParachain: Parachain,
+  totalContributionWeight: BigInt!
 }
 
 type HistoricalIncentive @entity {
   blockHeight: BigInt!,
   leadPercentageRate: BigInt!
-  siblingParachain: Parachain
+  siblingParachain: Parachain,
 }

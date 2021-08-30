@@ -3,6 +3,7 @@ import { EventContext, StoreContext } from '@subsquid/hydra-common';
 import { Crowdloan as CrowdloanEvents } from '../../types'
 import { encodeAccountId } from '../../utils/account';
 import { createContribution, ensureCrowdloan, updateCrowdloanFunds } from '../../utils/crowdloan';
+import { ownParachainId, updateTotalContributionWeightWithContribution } from '../../utils/incentive';
 import { updateParachainFundsPledged } from '../../utils/parachain';
 
 /**
@@ -26,7 +27,7 @@ const handleCrowdloanContributed = async ({
     // ensure we have a crowdloan to assign to the contribution
     let crowdloan = await ensureCrowdloan(store, paraId);
 
-    await Promise.all([
+    const [_, contribution] = await Promise.all([
         // account the current contribution towards the crowdloan raised funds
         await updateCrowdloanFunds(store, crowdloan, balance),
         // persist the contribution as its own entity
@@ -34,5 +35,8 @@ const handleCrowdloanContributed = async ({
     ]);
 
     await updateParachainFundsPledged(store, paraId);
+
+    // keep track of the totalContributionWeight in case the contribution was for our paraId
+    if (paraId === ownParachainId) await updateTotalContributionWeightWithContribution(store, blockHeight, contribution);
 }
 export default handleCrowdloanContributed;

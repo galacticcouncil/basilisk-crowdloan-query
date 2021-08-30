@@ -15,6 +15,7 @@ const handleAuctionBidAccepted = async ({
         leasePeriodEnd
     } = (() => {
         const [
+            accountId,
             paraId,
             balance,
             leasePeriodStart,

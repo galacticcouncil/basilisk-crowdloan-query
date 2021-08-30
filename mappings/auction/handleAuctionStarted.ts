@@ -12,12 +12,24 @@ import { updateChronicle } from '../../utils/chronicle';
  */
 const handleAuctionStarted = async ({
     store,
+    event,
     block
 }: StoreContext & EventContext) => {
     const blockHeight = new BN(block.height);
 
+    const mostRecentAuctionClosingStart = (() => {
+        const [
+            auctionIndex, 
+            leasePeriod, 
+            mostRecentAuctionClosingStart
+        ] = new Auctions.AuctionStartedEvent(event).params;
+        
+        return mostRecentAuctionClosingStart;
+    })();
+
     await updateChronicle(store, {
-        mostRecentAuctionStart: blockHeight
+        mostRecentAuctionStart: blockHeight,
+        mostRecentAuctionClosingStart
     });
 }
 

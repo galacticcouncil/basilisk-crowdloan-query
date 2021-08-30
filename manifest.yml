@@ -68,6 +68,10 @@ mappings:
   preBlockHooks:
     - handler: handlePreBlockGenesis
       filter:
+        # production range
         height: '[8857942, 8857942]'
+
+        # testing range
+        # height: '[8224581, 8224581]'
   postBlockHooks:
     - handler: handlePostBlock

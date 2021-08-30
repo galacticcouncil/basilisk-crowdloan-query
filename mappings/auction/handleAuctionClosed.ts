@@ -12,7 +12,7 @@ const handleAuctionClosed = async ({
 }: StoreContext) => {
     const allBids = await store.getMany(Bid, {});
     const deleteAllBids = allBids.map(bid => store.remove(bid));
-    return Promise.all(deleteAllBids);
+    await Promise.all(deleteAllBids);
 }
 
 export default handleAuctionClosed;

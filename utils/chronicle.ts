@@ -11,6 +11,7 @@ export const ensureChronicle = async (
         // just a starting value for the Chronicle
         lastProcessedBlock: new BN(0),
         mostRecentAuctionStart: new BN(0),
+        mostRecentAuctionClosingStart: new BN(0)
     });
 
     await store.save(chronicle);
