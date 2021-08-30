@@ -23,6 +23,7 @@ type Account @entity {
   "Account accountId"
   id: ID!,
   accountId: String!,
+  totalContributed: BigInt!,
   # Contributions made by the account in the current lifecycle of the indexer
   contributions: [Contribution!]! @derivedFrom(field: "account")
 }
@@ -43,6 +44,7 @@ type HistoricalParachainFundsPledged @entity {
   fundsPledged: BigInt!,
 }
 
+# Auctions have bids, Crowdloans have contributions
 type Bid @entity {
   id: ID!,
   parachain: Parachain!,

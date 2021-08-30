@@ -39,7 +39,7 @@ export const updateParachainFundsPledged = async (
     });
 
     const crowdloan = await store.get(Crowdloan, {
-        where: { id: paraId }, // TODO: figure out how to query through relations as well
+        where: { id: paraId },
         relations: ['parachain']
     });
 
@@ -85,9 +85,13 @@ export const shouldEnsureHistoricalParachainFundsPledged = async (
             }
         });
         
-        return lastHourlyHistoricalParachainFundsPledged?.blockHeight || new BN(0)
+        return lastHourlyHistoricalParachainFundsPledged?.blockHeight
     })();
 
+    // if there is no last historical entity, create the first one
+    if (!lastHistoricalEntityBlockHeight) return true;
+
+    //TODO: fix that first historical entity will be created after `timeBetweenHistoricalEntries` has passed
     // create a new historical entity, since `timeBetweenHistoricalEntries` has passed
     const blocksSinceLastHistoricalEntity = blockHeight.sub(lastHistoricalEntityBlockHeight);
     if (blocksSinceLastHistoricalEntity.gte(timeBetweenHistoricalEntries)) {

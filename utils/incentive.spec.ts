@@ -4,7 +4,7 @@ import { Parachain } from '../generated/model';
 import '../generated/server/config'
 import { calculateLeadPercentageRate } from './incentive';
 
-describe.only('utils/incentive', () => {
+describe('utils/incentive', () => {
     describe('calculateLeadPercentageRate', () => {
         it('should return 0 if no ownParachain is specified', () => {
             const ownParachain = undefined;
