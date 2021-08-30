@@ -209,14 +209,20 @@ export const resetTotalContributionWeight = async (
     parachain: Parachain
 ) => {
     // check if parachain is really ours
-    if (parachain.paraId !== ownParachainId) return;
+    if (parachain.paraId === ownParachainId) return;
+
+    const ownParachain = await store.get(Parachain, {
+        where: { id: ownParachainId }
+    });
+
+    if (!ownParachain) return;
 
     await updateIncentive(store, {
         /**
          * Multiply the fundsPledged by the precision multiplier, since the original
          * calculation uses the bsxMultiplier which already includes the precision multiplier
          */
-        totalContributionWeight: parachain.fundsPledged.mul(precisionMultiplierBN)
+        totalContributionWeight: ownParachain.fundsPledged.mul(precisionMultiplierBN)
     });
 }
 
