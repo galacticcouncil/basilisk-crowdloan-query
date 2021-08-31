@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { Parachain } from '../generated/model';
 import '../generated/server/config'
 import { auctionEndingPeriodLength } from './auction';
-import { bsxMultiplierMax, bsxMultiplierMin, calculateBSXMultiplier, calculateLeadPercentageRate, precisionMultiplier } from './incentive';
+import { bsxMultiplierMax, bsxMultiplierMin, calculateBSXMultiplier, calculateLeadPercentageRate, precisionMultiplier, precisionMultiplierBN } from './incentive';
 
 describe('utils/incentive', () => {
     describe('calculateLeadPercentageRate', () => {
@@ -11,7 +11,7 @@ describe('utils/incentive', () => {
             const ownParachain = undefined;
             const siblingParachain = undefined;
             const leadPercentageRate = calculateLeadPercentageRate(ownParachain, siblingParachain);
-            expect(leadPercentageRate).to.be.deep.equal(new BN(0));
+            expect(leadPercentageRate.toString()).to.be.deep.equal(new BN(0).toString());
         });
 
         it('should return 25% if the difference in fundsPledged is 25%', () => {
@@ -23,7 +23,7 @@ describe('utils/incentive', () => {
             } as Parachain;
 
             const leadPercentageRate = calculateLeadPercentageRate(ownParachain, siblingParachain);
-            expect(leadPercentageRate).to.be.deep.equal(new BN('250000'));
+            expect(leadPercentageRate.toString()).to.be.deep.equal(new BN('25000000').toString());
         });
 
         it('should return 10% if the difference in fundsPledged is 10%', () => {
@@ -35,8 +35,9 @@ describe('utils/incentive', () => {
             } as Parachain;
 
             const leadPercentageRate = calculateLeadPercentageRate(ownParachain, siblingParachain);
-            expect(leadPercentageRate).to.be.deep.equal(new BN('100000'));
+            expect(leadPercentageRate.toString()).to.be.deep.equal(new BN('10000000').toString());
         });
+
     });
 
     describe('calculateBSXMultiplier', () => {

@@ -83,6 +83,13 @@ export const determineIncentives = async (
     if (!ownParachain) return;
 
     const leadPercentageRate = calculateLeadPercentageRate(ownParachain, siblingParachain);
+
+    console.log("calculateLeadPercentageRate",
+        leadPercentageRate.div(precisionMultiplierBN).toString(),
+        ownParachain.fundsPledged.div(precisionMultiplierBN).toString(), 
+        siblingParachain?.fundsPledged.div(precisionMultiplierBN).toString()
+    );
+
     
     // ensure the historical entity
     await ensureHistoricalIncentive(
@@ -166,6 +173,7 @@ export const calculateLeadPercentageRate = (
             siblingParachainFundsPledged
                 .div(precisionMultiplierBN)
         )
+        .mul(new BN(100));
     
     return leadPercentageRateMod;
 }
