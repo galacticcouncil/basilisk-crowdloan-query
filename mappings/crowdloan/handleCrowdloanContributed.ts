@@ -27,16 +27,15 @@ const handleCrowdloanContributed = async ({
     // ensure we have a crowdloan to assign to the contribution
     let crowdloan = await ensureCrowdloan(store, paraId);
 
-    const [_, contribution] = await Promise.all([
-        // account the current contribution towards the crowdloan raised funds
-        await updateCrowdloanFunds(store, crowdloan, balance),
-        // persist the contribution as its own entity
-        await createContribution(store, crowdloan, accountId, balance, blockHeight)
-    ]);
+    // account the current contribution towards the crowdloan raised funds
+    await updateCrowdloanFunds(store, crowdloan, balance),
 
     await updateParachainFundsPledged(store, paraId);
 
-    // keep track of the totalContributionWeight in case the contribution was for our paraId
-    if (paraId === ownParachainId) await updateTotalContributionWeightWithContribution(store, blockHeight, contribution);
+    // handle individual contributions only for our own parachainId
+    if (paraId === ownParachainId) {
+        const contribution = await createContribution(store, crowdloan, accountId, balance, blockHeight)
+        await updateTotalContributionWeightWithContribution(store, blockHeight, contribution);
+    }
 }
 export default handleCrowdloanContributed;

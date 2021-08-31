@@ -46,11 +46,16 @@ mappings:
   # range: '[8200041, 8224041]'
   # best bid at real auction 3 end
   # range: '[8200041, 8209096]'
+  # auction 4 mid - auction 4 end
+  # range: '[8322028, 8324128]'
 
   # production range(s)
 
   # SherpaX (2013) crowdloan start - Infnity
   range: '[8857942, )'
+
+  # since kilt was created
+  # range: '[8961192, )'
 
   # events handled by the processor
   eventHandlers:
@@ -72,6 +77,6 @@ mappings:
         height: '[8857942, 8857942]'
 
         # testing range
-        # height: '[8224581, 8224581]'
+        # height: '[8324028, 8324028]'
   postBlockHooks:
     - handler: handlePostBlock
