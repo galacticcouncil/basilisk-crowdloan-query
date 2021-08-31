@@ -10,8 +10,8 @@ export const ensureChronicle = async (
     const chronicle = await ensure(store, Chronicle, chronicleID, {
         // just a starting value for the Chronicle
         lastProcessedBlock: new BN(0),
-        mostRecentAuctionStart: new BN(0),
-        mostRecentAuctionClosingStart: new BN(0)
+        mostRecentAuctionStart: undefined,
+        mostRecentAuctionClosingStart: undefined
     });
 
     await store.save(chronicle);
