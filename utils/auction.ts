@@ -56,7 +56,7 @@ export const updateBid = async (
  * https://github.com/paritytech/polkadot/blob/9fc3088f9e8dae5eaf062503fcefbb75a548c016/runtime/common/src/auctions.rs#L571
  */
 const leasePeriodsPerSlot = 8;
-const targetLeasePeriod = [13, 20];
+const targetLeasePeriod = [15, 22];
 
 /**
  * Replicate slot range serialization logic from the Polkadot runtime
