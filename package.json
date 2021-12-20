@@ -33,14 +33,15 @@
     "inflected": "^2.1.0",
     "lodash": "^4.17.21",
     "simple-linear-scale": "^1.0.1",
+    "ts-node": "^10.4.0",
     "typeorm": "^0.2.38"
   },
   "devDependencies": {
     "@polkadot/typegen": "^6.5.2",
     "@subsquid/hydra-cli": "5.0.0-alpha.12",
     "@subsquid/hydra-typegen": "5.0.0-alpha.12",
-    "@types/inflected": "^1.1.29",
     "@types/chai": "^4.2.21",
+    "@types/inflected": "^1.1.29",
     "@types/lodash": "^4.14.172",
     "@types/mocha": "^9.0.0",
     "@types/pg": "^8.6.1",
