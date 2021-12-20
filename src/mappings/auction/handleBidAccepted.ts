@@ -24,9 +24,9 @@ const handleAuctionBidAccepted = async ({
 
         return {
             paraId: paraId.toString(),
-            balance,
-            leasePeriodStart,
-            leasePeriodEnd
+            balance: balance.toBigInt(),
+            leasePeriodStart: leasePeriodStart.toBigInt(),
+            leasePeriodEnd: leasePeriodEnd.toBigInt()
         }
     })();
 

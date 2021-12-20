@@ -2,12 +2,13 @@ import { DatabaseManager } from '@subsquid/hydra-common';
 import { Parachain, Crowdloan, HistoricalParachainFundsPledged } from '../generated/model';
 import { ensure } from './ensure';
 import { BN } from '@polkadot/util';
+import { bigint } from '../generated/marshal';
 
-const blocksPerHour = new BN(600);
+const blocksPerHour = BigInt(600);
 // half an hour a.k.a. 300 blocks at 6 seconds per block
 // this configuration creates ~2000 entries per 7 days for each parachain
 // that exists at the time of the processing
-const timeBetweenHistoricalEntries = blocksPerHour.div(new BN(2));
+const timeBetweenHistoricalEntries = blocksPerHour / BigInt(2);
 
 /**
  * Find or create a parachain with default values,
@@ -20,7 +21,7 @@ export const ensureParachain = async (
     // ensure the parachain with appropriate default parameters
     const parachain = await ensure<Parachain>(store, Parachain, paraId, {
         paraId,
-        fundsPledged: (new BN(0)),
+        fundsPledged: BigInt(0),
         hasWonAnAuction: false,
         historicalFundsPledged: []
     });
@@ -46,7 +47,7 @@ export const updateParachainFundsPledged = async (
     if (!parachain || !crowdloan) return;
 
     // Make sure that the pledged funds are only increasing
-    if (crowdloan.raised.gt(parachain.fundsPledged)) {
+    if (crowdloan.raised > parachain.fundsPledged) {
         parachain.fundsPledged = crowdloan.raised;
         await store.save(parachain);
     }
@@ -55,7 +56,7 @@ export const updateParachainFundsPledged = async (
 export const createHistoricalParachainFundsPledged = async (
     store: DatabaseManager,
     parachain: Parachain,
-    blockHeight: BN
+    blockHeight: bigint
 ) => {
     const id = `${parachain.paraId}-${blockHeight}`;
     
@@ -65,7 +66,7 @@ export const createHistoricalParachainFundsPledged = async (
         id, {
             parachain,
             blockHeight,
-            fundsPledged: new BN(0)
+            fundsPledged: BigInt(0)
         }
     );
 
@@ -76,7 +77,7 @@ export const createHistoricalParachainFundsPledged = async (
 
 export const shouldEnsureHistoricalParachainFundsPledged = async (
     store: DatabaseManager,
-    blockHeight: BN,
+    blockHeight: bigint,
 ) => {
     const lastHistoricalEntityBlockHeight = await (async () => {
         const lastHourlyHistoricalParachainFundsPledged = await store.get(HistoricalParachainFundsPledged, {
@@ -93,8 +94,8 @@ export const shouldEnsureHistoricalParachainFundsPledged = async (
 
     //TODO: fix that first historical entity will be created after `timeBetweenHistoricalEntries` has passed
     // create a new historical entity, since `timeBetweenHistoricalEntries` has passed
-    const blocksSinceLastHistoricalEntity = blockHeight.sub(lastHistoricalEntityBlockHeight);
-    if (blocksSinceLastHistoricalEntity.gte(timeBetweenHistoricalEntries)) {
+    const blocksSinceLastHistoricalEntity = blockHeight - lastHistoricalEntityBlockHeight;
+    if (blocksSinceLastHistoricalEntity >= timeBetweenHistoricalEntries) {
         return true;
     }
     

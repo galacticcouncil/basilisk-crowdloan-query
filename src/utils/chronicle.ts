@@ -9,7 +9,7 @@ export const ensureChronicle = async (
 ) => {
     const chronicle = await ensure(store, Chronicle, chronicleID, {
         // just a starting value for the Chronicle
-        lastProcessedBlock: new BN(0),
+        lastProcessedBlock: BigInt(0),
         mostRecentAuctionStart: undefined,
         mostRecentAuctionClosingStart: undefined
     });
