@@ -1,6 +1,6 @@
 import { DatabaseManager } from '@subsquid/hydra-common';
 import { Parachain, Crowdloan, HistoricalParachainFundsPledged } from '../generated/model';
-import { ensure } from '../utils/ensure';
+import { ensure } from './ensure';
 import { BN } from '@polkadot/util';
 
 const blocksPerHour = new BN(600);

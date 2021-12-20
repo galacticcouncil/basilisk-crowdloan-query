@@ -1,11 +1,11 @@
-version: '3.0'
-description: Test manifest
+version: '4.0'
+description: dot cl manifest
 repository: https://github.com/
-hydraVersion: "4"
+hydraVersion: "5"
 
 typegen:
   metadata:
-    source: wss://kusama-rpc.polkadot.io/
+    source: wss://rpc.polkadot.io/
   events:
     - crowdloan.Contributed
     - auctions.BidAccepted
@@ -14,10 +14,10 @@ typegen:
     - slots.Leased
   calls:
     - timestamp.set
-  outDir: types
+  outDir: src/types
 
 mappings:
-  mappingsModule: mappings
+  mappingsModule: lib/mappings
 
   # testing ranges
 
@@ -52,7 +52,10 @@ mappings:
   # production range(s)
 
   # SherpaX (2013) crowdloan start - Infnity
-  range: '[8857942, )'
+  # range: '[8857942, )'
+
+  #point at DOT
+  range: '[ 8221262, )'
 
   # since kilt was created
   # range: '[8961192, )'

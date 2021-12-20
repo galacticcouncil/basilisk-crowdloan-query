@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 import { ensure } from './ensure';
 import { DatabaseManager } from '@subsquid/hydra-common';
-import { Chronicle } from "../generated/modules/chronicle/chronicle.model";
+import { Chronicle } from "../generated/model/chronicle.model";
 
 export const chronicleID = 'chronicle';
 export const ensureChronicle = async (

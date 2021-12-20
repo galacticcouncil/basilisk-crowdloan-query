@@ -1,8 +1,8 @@
 import { DatabaseManager } from '@subsquid/hydra-common';
 import { Contribution, Crowdloan } from '../generated/model';
-import { ensure } from '../utils/ensure';
+import { ensure } from './ensure';
 import { BN } from '@polkadot/util';
-import { ensureParachain } from '../utils/parachain';
+import { ensureParachain } from './parachain';
 import { ensureAccount, updateAccount } from './account';
 
 /**

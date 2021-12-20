@@ -1,12 +1,17 @@
-docker-compose down
-rm -r db generated types
+set -e
+
+docker compose down
+
+rm -rf db src/generated src/types
 
 npm run codegen
+
 npm run typegen
 
-docker-compose up -d db
-sleep 1
+npm run build
 
-npm run processor:migrate
-npm run db:create-migration initial
+docker compose up db -d
+sleep 5
+
 npm run db:migrate
+npm run processor:migrate
