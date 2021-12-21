@@ -60,7 +60,7 @@ export const updateBid = async (
  * https://github.com/paritytech/polkadot/blob/9fc3088f9e8dae5eaf062503fcefbb75a548c016/runtime/common/src/auctions.rs#L571
  */
 const leasePeriodsPerSlot = 8;
-const targetLeasePeriod = [15, 22];
+export const targetLeasePeriod = [13, 20];
 
 /**
  * Replicate slot range serialization logic from the Polkadot runtime
@@ -114,8 +114,8 @@ export const minimizeSlotRange = ({
   leasePeriodStart,
   leasePeriodEnd,
 }: SlotRange): SlotRange => ({
-  leasePeriodStart: BigInt(slotRangeScale(leasePeriodStart)),
-  leasePeriodEnd: BigInt(slotRangeScale(leasePeriodEnd)),
+  leasePeriodStart: BigInt(slotRangeScale(Number(leasePeriodStart))),
+  leasePeriodEnd: BigInt(slotRangeScale(Number(leasePeriodEnd))),
 });
 
 /**

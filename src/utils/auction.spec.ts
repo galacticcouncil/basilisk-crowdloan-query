@@ -1,18 +1,18 @@
 //import '../generated/server/config'
 import { BN } from "@polkadot/util";
 import { Bid } from "../generated/model";
-import { bestBidForRangeIndex, determineWinningBids, minimizeSlotRange, slotRangeToIndex, IndexedBids, bidsIntoRangeIndexes, determineWinningBidsFromCurrentBids } from "./auction";
+import { bestBidForRangeIndex, determineWinningBids, minimizeSlotRange, slotRangeToIndex, IndexedBids, bidsIntoRangeIndexes, determineWinningBidsFromCurrentBids, targetLeasePeriod } from "./auction";
 import { expect } from 'chai';
 
 describe('utils/auction', () => {
 
     describe('minimizeSlotRange', () => {
-        it.only('should serialize the given lease range to a number', () => {
+        it('should serialize the given lease range to a number', () => {
             [
                 {
                     slotRange: {
-                        leasePeriodStart: BigInt(13),
-                        leasePeriodEnd: BigInt(20),
+                        leasePeriodStart: BigInt(targetLeasePeriod[0]),
+                        leasePeriodEnd: BigInt(targetLeasePeriod[1]),
                     },
                     expectedMinimalSlotRange: {
                         leasePeriodStart: BigInt(0),
@@ -21,8 +21,8 @@ describe('utils/auction', () => {
                 },
                 {
                     slotRange: {
-                        leasePeriodStart: BigInt(13),
-                        leasePeriodEnd: BigInt(13),
+                        leasePeriodStart: BigInt(targetLeasePeriod[0]),
+                        leasePeriodEnd: BigInt(targetLeasePeriod[0]),
                     },
                     expectedMinimalSlotRange: {
                         leasePeriodStart: BigInt(0),
@@ -31,8 +31,8 @@ describe('utils/auction', () => {
                 },
                 {
                     slotRange: {
-                        leasePeriodStart: BigInt(13),
-                        leasePeriodEnd: BigInt(15),
+                        leasePeriodStart: BigInt(targetLeasePeriod[0]),
+                        leasePeriodEnd: BigInt(targetLeasePeriod[0] + 2),
                     },
                     expectedMinimalSlotRange: {
                         leasePeriodStart: BigInt(0),

@@ -15,7 +15,7 @@ import { ensureChronicle } from "./chronicle";
 // TODO: can we extract precision from polkadot.js?
 // BN does not deal with floats, multiply by a 10^6 to prevent more than reasonable precision loss
 export const precisionMultiplierBN = BigInt(10) ** BigInt(6);
-export const precisionMultiplier = Math.pow(10, 6);
+export const precisionMultiplier = BigInt(Math.pow(10, 6));
 
 if (!process.env.OWN_PARACHAIN_ID)
   throw new Error("env.OWN_PARACHAIN_ID is not specified");
@@ -25,11 +25,9 @@ if (!process.env.BSX_MULTIPLIER_MAX)
   throw new Error("env.BSX_MULTIPLIER_MAX is not specified");
 
 export const ownParachainId = process.env.OWN_PARACHAIN_ID;
-export const bsxMultiplierMin =
-  parseInt(process.env.BSX_MULTIPLIER_MIN) * precisionMultiplier;
-export const bsxMultiplierMax =
-  parseInt(process.env.BSX_MULTIPLIER_MAX) * precisionMultiplier;
-export const bsxMultiplierNone = 0;
+export const bsxMultiplierMin = BigInt(process.env.BSX_MULTIPLIER_MIN) * precisionMultiplier;
+export const bsxMultiplierMax = BigInt(process.env.BSX_MULTIPLIER_MAX) * precisionMultiplier;
+export const bsxMultiplierNone = BigInt(0);
 
 const ensureHistoricalIncentive = async (
   store: DatabaseManager,
@@ -187,9 +185,6 @@ export const calculateBSXMultiplier = (
   blockHeight: bigint,
   mostRecentAuctionClosingStart: bigint | undefined | null
 ): bigint => {
-  // TODO
-  if (mostRecentAuctionClosingStart === null)
-    throw "could not retrieve most recent auction closing start";
   // if we dont know when the recent auction starts closing
   if (!mostRecentAuctionClosingStart) return BigInt(bsxMultiplierMax);
   // bsx multiplier is the biggest, in blocks before the auction starts closing
@@ -209,7 +204,10 @@ export const calculateBSXMultiplier = (
       Number(mostRecentAuctionClosingStart),
       Number(mostRecentAuctionClosingEnd),
     ],
-    [bsxMultiplierMax, bsxMultiplierMin],
+    [
+      Number(bsxMultiplierMax),
+      Number(bsxMultiplierMin)
+    ],
     false
   );
 
