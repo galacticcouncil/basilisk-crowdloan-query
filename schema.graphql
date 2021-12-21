@@ -65,7 +65,8 @@ type Incentive @entity {
   blockHeight: BigInt!,
   leadPercentageRate: BigInt!,
   siblingParachain: Parachain,
-  totalContributionWeight: BigInt!
+  # We're not using this for Hydra
+  # totalContributionWeight: BigInt!
 }
 
 type HistoricalIncentive @entity {

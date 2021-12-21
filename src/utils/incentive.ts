@@ -51,13 +51,11 @@ const ensureIncentive = async (
   siblingParachain: Parachain | undefined,
   leadPercentageRate: bigint,
   blockHeight: bigint,
-  totalContributionWeight: bigint
 ) => {
   const incentive = await ensure(store, Incentive, incentiveID, {
     blockHeight,
     leadPercentageRate,
     siblingParachain,
-    totalContributionWeight,
   });
 
   store.save(incentive);
@@ -117,7 +115,6 @@ export const determineIncentives = async (
     siblingParachain,
     leadPercentageRate,
     blockHeight,
-    BigInt(0)
   ),
     // update the latest incentives
     await updateIncentive(store, {
@@ -179,93 +176,4 @@ export const calculateLeadPercentageRate = (
     BigInt(100);
 
   return leadPercentageRateMod;
-};
-
-export const calculateBSXMultiplier = (
-  blockHeight: bigint,
-  mostRecentAuctionClosingStart: bigint | undefined | null
-): bigint => {
-  // if we dont know when the recent auction starts closing
-  if (!mostRecentAuctionClosingStart) return BigInt(bsxMultiplierMax);
-  // bsx multiplier is the biggest, in blocks before the auction starts closing
-  if (blockHeight < mostRecentAuctionClosingStart)
-    return BigInt(bsxMultiplierMax);
-
-  const mostRecentAuctionClosingEnd =
-    mostRecentAuctionClosingStart + auctionEndingPeriodLength;
-  // special case where the blockHeight is after the closing end, we return no bsx multiplier
-  // this is required due to broken clamping in the scale, which would return 0 otherwise.
-  if (blockHeight >= mostRecentAuctionClosingEnd)
-    return BigInt(bsxMultiplierNone);
-
-  const bsxMultiplierScale = linearScale(
-    // TODO: is it safe to use .toNumber() here? probably yes within the 7 digit range
-    [
-      Number(mostRecentAuctionClosingStart),
-      Number(mostRecentAuctionClosingEnd),
-    ],
-    [
-      Number(bsxMultiplierMax),
-      Number(bsxMultiplierMin)
-    ],
-    false
-  );
-
-  // TODO: move the scale consumption to big-number.js instead of BN
-  return BigInt(bsxMultiplierScale(Number(blockHeight)));
-};
-
-/**
- * This method assumes that there are no manual bids,
- * and therefore uses the parachain.fundsPledged as for
- * the totalContributionWeight calculation
- *
- * Resets the BSX multiplier back to the max (1).
- */
-export const resetTotalContributionWeight = async (
-  store: DatabaseManager,
-  parachain: Parachain
-) => {
-  // check if parachain is really ours
-  if (parachain.paraId === ownParachainId) return;
-
-  const ownParachain = await store.get(Parachain, {
-    where: { id: ownParachainId },
-  });
-
-  if (!ownParachain) return;
-
-  await updateIncentive(store, {
-    /**
-     * Multiply the fundsPledged by the precision multiplier, since the original
-     * calculation uses the bsxMultiplier which already includes the precision multiplier
-     */
-    totalContributionWeight: ownParachain.fundsPledged * precisionMultiplierBN,
-  });
-};
-
-export const updateTotalContributionWeightWithContribution = async (
-  store: DatabaseManager,
-  blockHeight: bigint,
-  contribution: Contribution
-) => {
-  const incentive = await ensureIncentive(
-    store,
-    undefined,
-    BigInt(0),
-    blockHeight,
-    BigInt(0)
-  );
-
-  const { mostRecentAuctionClosingStart } = await ensureChronicle(store);
-
-  const bsxMultiplier = calculateBSXMultiplier(
-    blockHeight,
-    mostRecentAuctionClosingStart
-  );
-  const totalContributionWeight =
-    (incentive.totalContributionWeight + contribution.balance) * bsxMultiplier;
-  await updateIncentive(store, {
-    totalContributionWeight,
-  });
 };

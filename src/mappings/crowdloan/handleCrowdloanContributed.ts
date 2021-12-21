@@ -3,7 +3,7 @@ import { EventContext, StoreContext } from '@subsquid/hydra-common';
 import { Crowdloan as CrowdloanEvents } from '../../types'
 import { encodeAccountId } from '../../utils/account';
 import { createContribution, ensureCrowdloan, updateCrowdloanFunds } from '../../utils/crowdloan';
-import { ownParachainId, updateTotalContributionWeightWithContribution } from '../../utils/incentive';
+import { ownParachainId } from '../../utils/incentive';
 import { updateParachainFundsPledged } from '../../utils/parachain';
 
 /**
@@ -34,8 +34,7 @@ const handleCrowdloanContributed = async ({
 
     // handle individual contributions only for our own parachainId
     if (paraId === ownParachainId) {
-        const contribution = await createContribution(store, crowdloan, accountId, balance, blockHeight)
-        await updateTotalContributionWeightWithContribution(store, blockHeight, contribution);
+        await createContribution(store, crowdloan, accountId, balance, blockHeight)
     }
 }
 export default handleCrowdloanContributed;
