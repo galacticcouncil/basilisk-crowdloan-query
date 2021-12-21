@@ -77,7 +77,7 @@ mappings:
     - handler: handlePreBlockGenesis
       filter:
         # production range
-        height: '[8857942, 8857942]'
+        height: '[8062110, 8062110]'
 
         # testing range
         # height: '[8324028, 8324028]'
