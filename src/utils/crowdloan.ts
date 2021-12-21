@@ -1,8 +1,8 @@
 import { DatabaseManager } from '@subsquid/hydra-common';
 import { Contribution, Crowdloan } from '../generated/model';
-import { ensure } from '../utils/ensure';
+import { ensure } from './ensure';
 import { BN } from '@polkadot/util';
-import { ensureParachain } from '../utils/parachain';
+import { ensureParachain } from './parachain';
 import { ensureAccount, updateAccount } from './account';
 
 /**
@@ -12,8 +12,8 @@ import { ensureAccount, updateAccount } from './account';
     store: DatabaseManager,
     crowdloan: Crowdloan,
     accountId: string,
-    balance: BN,
-    blockHeight: BN
+    balance: bigint,
+    blockHeight: bigint
 ): Promise<Contribution> => {
     // alternatively use UUID to generate a unique ID for the entity
     // calculate an incremental ID based on 
@@ -62,7 +62,7 @@ export const ensureCrowdloan = async (
     const crowdloan = await ensure<Crowdloan>(store, Crowdloan, paraId, {
         parachain,
         contributions: [],
-        raised: new BN(0)
+        raised: BigInt(0)
     });
         
     // persist the crowdloan
@@ -77,8 +77,8 @@ export const ensureCrowdloan = async (
 export const updateCrowdloanFunds = async (
     store: DatabaseManager,
     crowdloan: Crowdloan,
-    newFunds: BN
+    newFunds: bigint
 ) => {
-    crowdloan.raised = crowdloan.raised.add(newFunds);
+    crowdloan.raised = crowdloan.raised + newFunds;
     await store.save(crowdloan);
 }

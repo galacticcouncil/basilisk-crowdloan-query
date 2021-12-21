@@ -14,13 +14,13 @@ const handleCrowdloanContributed = async ({
     event,
     block
 }: EventContext & StoreContext) => {
-    const blockHeight = new BN(block.height);
+    const blockHeight = BigInt(block.height);
     const { accountId, paraId, balance } = (() => {
         const [accountId, paraId, balance] = new CrowdloanEvents.ContributedEvent(event).params;
         return {
             accountId: encodeAccountId(accountId.toString()),
             paraId: paraId.toString(),
-            balance: balance
+            balance: balance.toBigInt()
         }
     })();
     

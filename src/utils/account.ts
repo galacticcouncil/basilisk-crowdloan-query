@@ -1,7 +1,6 @@
-import { BN } from '@polkadot/util';
 import { DatabaseManager } from '@subsquid/hydra-common';
 import { Account, Contribution } from '../generated/model';
-import { ensure } from '../utils/ensure';
+import { ensure } from './ensure';
 import { encodeAddress,decodeAddress } from '@polkadot/util-crypto';
 
 export const encodeAccountId = (accountId: string) => encodeAddress(decodeAddress(accountId), 2) 
@@ -18,7 +17,7 @@ export const ensureAccount = async (
         // if we see the account for the first time, we assume
         // it made no contributions so far, otherwise we would have persisted it already
         contributions: [],
-        totalContributed: new BN(0)
+        totalContributed: BigInt(0)
     });
 
     // persist the account
@@ -34,6 +33,6 @@ export const updateAccount = async (
     accountId = encodeAccountId(accountId);
     const account = await store.get(Account, { where: { id: accountId }});
     if (!account || !contribution) return;
-    account.totalContributed = account.totalContributed.add(contribution.balance);
+    account.totalContributed = account.totalContributed + contribution.balance;
     await store.save(account);
 }

@@ -1,4 +1,4 @@
-import '../generated/server/config'
+//import '../generated/server/config'
 import { BN } from "@polkadot/util";
 import { Bid } from "../generated/model";
 import { bestBidForRangeIndex, determineWinningBids, minimizeSlotRange, slotRangeToIndex, IndexedBids, bidsIntoRangeIndexes, determineWinningBidsFromCurrentBids } from "./auction";
@@ -7,36 +7,36 @@ import { expect } from 'chai';
 describe('utils/auction', () => {
 
     describe('minimizeSlotRange', () => {
-        it('should serialize the given lease range to a number', () => {
+        it.only('should serialize the given lease range to a number', () => {
             [
                 {
                     slotRange: {
-                        leasePeriodStart: new BN(13),
-                        leasePeriodEnd: new BN(20),
+                        leasePeriodStart: BigInt(13),
+                        leasePeriodEnd: BigInt(20),
                     },
                     expectedMinimalSlotRange: {
-                        leasePeriodStart: new BN(0),
-                        leasePeriodEnd: new BN(7),
+                        leasePeriodStart: BigInt(0),
+                        leasePeriodEnd: BigInt(7),
                     }
                 },
                 {
                     slotRange: {
-                        leasePeriodStart: new BN(13),
-                        leasePeriodEnd: new BN(13),
+                        leasePeriodStart: BigInt(13),
+                        leasePeriodEnd: BigInt(13),
                     },
                     expectedMinimalSlotRange: {
-                        leasePeriodStart: new BN(0),
-                        leasePeriodEnd: new BN(0),
+                        leasePeriodStart: BigInt(0),
+                        leasePeriodEnd: BigInt(0),
                     }
                 },
                 {
                     slotRange: {
-                        leasePeriodStart: new BN(13),
-                        leasePeriodEnd: new BN(15),
+                        leasePeriodStart: BigInt(13),
+                        leasePeriodEnd: BigInt(15),
                     },
                     expectedMinimalSlotRange: {
-                        leasePeriodStart: new BN(0),
-                        leasePeriodEnd: new BN(2),
+                        leasePeriodStart: BigInt(0),
+                        leasePeriodEnd: BigInt(2),
                     }
                 },
             ].map(({ slotRange, expectedMinimalSlotRange }) => {
@@ -55,9 +55,9 @@ describe('utils/auction', () => {
 
         it('should return the existing bid weighted by its range', () => {
             const expectedBestBid: Bid = new Bid({
-                leasePeriodStart: new BN(0),
-                leasePeriodEnd: new BN(7),
-                balance: new BN(10)
+                leasePeriodStart: BigInt(0),
+                leasePeriodEnd: BigInt(7),
+                balance: BigInt(10)
             });
 
             const slotRangeIndex = slotRangeToIndex({
@@ -73,7 +73,7 @@ describe('utils/auction', () => {
 
             expect(bestBid).to.not.be.undefined;
             // TODO: find a way to type this correctly without crazy casting
-            expect((bestBid as unknown as BN).eq(new BN(80))).to.be.true
+            expect(BigInt(bestBid!)).to.equal(BigInt(80))
         });
     })
 
@@ -153,14 +153,14 @@ describe('utils/auction', () => {
             }
         ].map(data => ({
             currentBids: data.currentBids.map(bid => ({
-                balance: new BN(bid.balance),
-                leasePeriodStart: new BN(bid.leasePeriodStart),
-                leasePeriodEnd: new BN(bid.leasePeriodEnd)
+                balance: BigInt(bid.balance),
+                leasePeriodStart: BigInt(bid.leasePeriodStart),
+                leasePeriodEnd: BigInt(bid.leasePeriodEnd)
             } as Bid)),
             winningBids: data.winningBids.map(bid => ({
-                balance: new BN(bid.balance),
-                leasePeriodStart: new BN(bid.leasePeriodStart),
-                leasePeriodEnd: new BN(bid.leasePeriodEnd)
+                balance: BigInt(bid.balance),
+                leasePeriodStart: BigInt(bid.leasePeriodStart),
+                leasePeriodEnd: BigInt(bid.leasePeriodEnd)
             } as Bid))
         }));
 
@@ -176,9 +176,9 @@ describe('utils/auction', () => {
     describe('winner calculation from past live auction data', () => {
         const toBid = (bid: any) => new Bid({
             ...bid,
-            leasePeriodStart: new BN(bid.leasePeriodStart),
-            leasePeriodEnd: new BN(bid.leasePeriodEnd),
-            balance: new BN(bid.balance)
+            leasePeriodStart: BigInt(bid.leasePeriodStart),
+            leasePeriodEnd: BigInt(bid.leasePeriodEnd),
+            balance: BigInt(bid.balance)
         });
 
         describe('auction 1 winner calculation', () => {

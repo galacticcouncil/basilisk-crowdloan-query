@@ -1,5 +1,5 @@
 
-import { EventContext, StoreContext, DatabaseManager } from '@subsquid/hydra-common';
+import { StoreContext } from '@subsquid/hydra-common';
 import { Bid } from '../../generated/model';
 
 /**

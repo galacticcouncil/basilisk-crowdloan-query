@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 import { ensure } from './ensure';
 import { DatabaseManager } from '@subsquid/hydra-common';
-import { Chronicle } from "../generated/modules/chronicle/chronicle.model";
+import { Chronicle } from "../generated/model/chronicle.model";
 
 export const chronicleID = 'chronicle';
 export const ensureChronicle = async (
@@ -9,7 +9,7 @@ export const ensureChronicle = async (
 ) => {
     const chronicle = await ensure(store, Chronicle, chronicleID, {
         // just a starting value for the Chronicle
-        lastProcessedBlock: new BN(0),
+        lastProcessedBlock: BigInt(0),
         mostRecentAuctionStart: undefined,
         mostRecentAuctionClosingStart: undefined
     });

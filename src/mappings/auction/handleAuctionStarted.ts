@@ -15,7 +15,7 @@ const handleAuctionStarted = async ({
     event,
     block
 }: StoreContext & EventContext) => {
-    const blockHeight = new BN(block.height);
+    const blockHeight = BigInt(block.height);
 
     const mostRecentAuctionClosingStart = (() => {
         const [
@@ -24,7 +24,7 @@ const handleAuctionStarted = async ({
             mostRecentAuctionClosingStart
         ] = new Auctions.AuctionStartedEvent(event).params;
         
-        return mostRecentAuctionClosingStart;
+        return mostRecentAuctionClosingStart.toBigInt();
     })();
 
     await updateChronicle(store, {

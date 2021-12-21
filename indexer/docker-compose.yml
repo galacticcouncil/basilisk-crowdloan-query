@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   indexer:
-    image: subsquid/hydra-indexer:4
+    image: subsquid/hydra-indexer:5
     restart: unless-stopped
     environment:
       - INDEXER_WORKERS=5
@@ -21,8 +21,8 @@ services:
       - DB_PASS=postgres
       - DB_PORT=5432
       - REDIS_URI=redis://redis:6379/0
-      - BLOCK_HEIGHT=0 # starting block height
-      - WS_PROVIDER_ENDPOINT_URI=wss://kusama-rpc.polkadot.io/
+      - BLOCK_HEIGHT=8218650 # starting block height
+      - WS_PROVIDER_ENDPOINT_URI=wss://rpc.polkadot.io/
 
     # # If your chain uses custom types you need to provide those
     # # as detailed here - https://polkadot.js.org/docs/api/start/types.extend
@@ -50,7 +50,7 @@ services:
       sh -c "yarn db:bootstrap && yarn start:prod"
 
   indexer-gateway:
-    image: subsquid/hydra-indexer-gateway:4
+    image: subsquid/hydra-indexer-gateway:5
     restart: unless-stopped
     depends_on:
       - redis
@@ -66,7 +66,8 @@ services:
       - DB_USER=postgres
       - DB_PASS=postgres
       - DB_PORT=5432
-      - HYDRA_INDEXER_STATUS_SERVICE=http://indexer-status-service:8081/status
+      - HYDRA_INDEXER_STATUS_SERVICE= https://polka-idx.hydration.cloud/idx-status-86186
+     # - HYDRA_INDEXER_STATUS_SERVICE=http://indexer-status-service:8081/status
 
   indexer-status-service:
     image: subsquid/hydra-indexer-status-service:4
