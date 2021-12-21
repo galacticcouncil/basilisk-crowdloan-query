@@ -9,7 +9,7 @@ const handlePostBlock = async ({
     store,
     block
 }: BlockContext & StoreContext) => {
-    const blockHeight = new BN(block.height);
+    const blockHeight = BigInt(block.height);
 
     await updateChronicle(store, {
         lastProcessedBlock: blockHeight

@@ -15,3 +15,5 @@ sleep 5
 
 npm run db:migrate
 npm run processor:migrate
+npm run processor:db:create-migration initial
+npm run processor:db:migrate
