@@ -1,13 +1,13 @@
 /// <reference path="simple-linear-scale.d.ts"/>
-import { BN } from "@polkadot/util";
 import { DatabaseManager } from "@subsquid/hydra-common";
 import { Bid, Parachain } from "../generated/model";
 import { ensure } from "./ensure";
 import { ensureParachain } from "./parachain";
 import { times, findKey, partial, isEqual, groupBy, find } from "lodash";
 import linearScale from "simple-linear-scale";
-import { bigint } from "../generated/marshal";
-
+import dotenv from 'dotenv'
+dotenv.config()
+console.log(process.env.ENDING_PERIOD_LENGTH)
 if (!process.env.ENDING_PERIOD_LENGTH)
   throw new Error("env.ENDING_PERIOD_LENGTH is not specified");
 export const auctionEndingPeriodLength = BigInt(
@@ -107,7 +107,7 @@ export const slotRangeToIndex = ({
 
 const slotRangeScale = linearScale(targetLeasePeriod, [
   0,
-  leasePeriodsPerSlot - 1,
+  leasePeriodsPerSlot - 1
 ]);
 // this function will transform e.g. 13-20 to 0-7, same as runtime's SlotRange::new_bounded
 export const minimizeSlotRange = ({

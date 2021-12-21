@@ -1,7 +1,6 @@
-import { BN } from '@polkadot/util';
 import { expect } from 'chai';
 import { Parachain } from '../generated/model';
-import '../generated/server/config'
+//import '../generated/server/config'
 import { auctionEndingPeriodLength } from './auction';
 import { bsxMultiplierMax, bsxMultiplierMin, calculateBSXMultiplier, calculateLeadPercentageRate, precisionMultiplier, precisionMultiplierBN } from './incentive';
 
