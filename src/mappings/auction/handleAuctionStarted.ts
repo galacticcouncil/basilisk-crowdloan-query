@@ -7,7 +7,6 @@ import { updateChronicle } from '../../utils/chronicle';
  * When an auction starts, we need to save its starting block
  * into the Chronicle, in order to calculate
  * rewards.
- * @todo update that ☝️
  */
 const handleAuctionStarted = async ({
     store,
