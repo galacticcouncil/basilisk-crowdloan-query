@@ -1,5 +1,5 @@
 {
-  "name": "dot-cl",
+  "name": "dot-cl-query-node",
   "private": "true",
   "version": "0.0.0",
   "description": "GraphQL server and Substrate indexer. Generated with ♥ by Hydra-CLI",
@@ -11,8 +11,6 @@
     "codegen": "hydra-cli codegen",
     "db:create": "hydra-cli db:create",
     "db:drop": "hydra-cli db:drop",
-    "db:create-migration": "hydra-cli db:create-migration",
-    "db:migrate": "hydra-cli db:migrate",
     "db:revert": "hydra-cli db:revert",
     "db:reset": "hydra-cli db:drop && hydra-cli db:create && hydra-processor migrate && hydra-cli db:migrate",
     "processor:migrate": "hydra-processor migrate",
