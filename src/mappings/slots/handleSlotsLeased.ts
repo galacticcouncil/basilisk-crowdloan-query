@@ -1,5 +1,5 @@
 import { EventContext, StoreContext } from '@subsquid/hydra-common';
-import { Slots } from '../../types/slots';
+import { Slots } from '../../types/Slots';
 import { ownParachainId } from '../../utils/incentive';
 import { ensureParachain } from '../../utils/parachain';
 
