@@ -1,8 +1,6 @@
 import { expect } from 'chai';
 import { Parachain } from '../generated/model';
-//import '../generated/server/config'
-import { auctionEndingPeriodLength } from './auction';
-import { bsxMultiplierMax, bsxMultiplierMin, calculateLeadPercentageRate, precisionMultiplier, precisionMultiplierBN } from './incentive';
+import { calculateLeadPercentageRate } from './incentive';
 
 describe('utils/incentive', () => {
     describe('calculateLeadPercentageRate', () => {
