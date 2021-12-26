@@ -21,7 +21,7 @@ import { ensureAccount, updateAccount } from './account';
     const id = await (async () => {
         const userContributions = await store.getMany(Contribution, {
             where: { 
-                accountId
+                account: accountId
             }
         });
 
