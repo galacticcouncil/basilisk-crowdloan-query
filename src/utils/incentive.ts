@@ -90,7 +90,7 @@ export const determineIncentives = async (
     (leadPercentageRate / precisionMultiplierBN).toString(),
     (ownParachain.fundsPledged / precisionMultiplierBN).toString(),
     // TODO undefined handling
-    (siblingParachain?.fundsPledged! / precisionMultiplierBN).toString()
+    (siblingParachain?.fundsPledged! || BigInt(1) / precisionMultiplierBN).toString()
   );
 
   // ensure the historical entity
@@ -156,10 +156,11 @@ const getRivalSibling = async (store: DatabaseManager) => {
 
   const siblingsPromise = getSiblings(store);
   const currentAuctionIndexPromise = getMostRecentAuctionIndex(store);
-  const [siblings, currentAuctionIndex] = await Promise.all([
+  const [siblings, currentAuctionIndexBigInt] = await Promise.all([
     siblingsPromise,
-    Number(currentAuctionIndexPromise),
+    currentAuctionIndexPromise,
   ]);
+  const currentAuctionIndex = Number(currentAuctionIndexBigInt)
   const ownTargetAuctionIndex = Number(process.env.OWN_TARGET_AUCTION_INDEX);
   const auctionsUntilOurTarget = Math.max( 0, ownTargetAuctionIndex - currentAuctionIndex )
   // if ownTargetAuctionIndex - currentAuctionIndex is a negative number,
@@ -185,7 +186,7 @@ export const calculateLeadPercentageRate = (
   // our parachain does not exist yet, no point in calculating incentives
   if (!ownParachain) return BigInt(0);
 
-  // default to 1, to avoit division by 0 errors
+  // default to 1, to avoid division by 0 errors
   const ownParachainFundsPledged =
     (ownParachain?.fundsPledged || BigInt(1)) * precisionMultiplierBN;
   const siblingParachainFundsPledged =
