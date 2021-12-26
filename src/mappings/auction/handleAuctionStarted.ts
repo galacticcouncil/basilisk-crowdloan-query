@@ -1,14 +1,12 @@
 
-import { BN } from '@polkadot/util';
-import { EventContext, StoreContext, DatabaseManager } from '@subsquid/hydra-common';
-import { Bid } from '../../generated/model';
+import { EventContext, StoreContext } from '@subsquid/hydra-common';
 import { Auctions } from '../../types';
 import { updateChronicle } from '../../utils/chronicle';
 
 /**
  * When an auction starts, we need to save its starting block
- * into the Chronicle, in order to retrospectively calculate
- * rewards with a reset BSX multiplier on the UI.
+ * into the Chronicle, in order to calculate
+ * rewards.
  */
 const handleAuctionStarted = async ({
     store,
@@ -17,17 +15,18 @@ const handleAuctionStarted = async ({
 }: StoreContext & EventContext) => {
     const blockHeight = BigInt(block.height);
 
-    const mostRecentAuctionClosingStart = (() => {
+    const [ mostRecentAuctionIndex, mostRecentAuctionClosingStart ] = (() => {
         const [
-            auctionIndex, 
-            leasePeriod, 
+            mostRecentAuctionIndex,
+            leasePeriod,
             mostRecentAuctionClosingStart
         ] = new Auctions.AuctionStartedEvent(event).params;
         
-        return mostRecentAuctionClosingStart.toBigInt();
+        return [ mostRecentAuctionIndex.toBigInt(), mostRecentAuctionClosingStart.toBigInt() ]
     })();
 
     await updateChronicle(store, {
+        mostRecentAuctionIndex,
         mostRecentAuctionStart: blockHeight,
         mostRecentAuctionClosingStart
     });

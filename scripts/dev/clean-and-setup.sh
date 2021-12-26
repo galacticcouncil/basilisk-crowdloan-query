@@ -4,16 +4,15 @@ docker compose down
 
 rm -rf db src/generated src/types
 
-npm run codegen
+yarn run codegen
 
-npm run typegen
+yarn run typegen
 
-npm run build
+yarn run build
 
 docker compose up db -d
 sleep 5
 
-npm run db:migrate
-npm run processor:migrate
-npm run processor:db:create-migration initial
-npm run processor:db:migrate
+yarn run processor:migrate
+yarn run processor:db:create-migration initial
+yarn run processor:db:migrate

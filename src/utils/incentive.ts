@@ -1,16 +1,12 @@
 import { DatabaseManager } from "@subsquid/hydra-common";
 import {
-  Contribution,
+  Chronicle,
   HistoricalIncentive,
   Incentive,
   Parachain,
 } from "../generated/model";
 import { Not } from "typeorm";
-import { BN } from "@polkadot/util";
 import { ensure } from "./ensure";
-import { auctionEndingPeriodLength } from "./auction";
-import linearScale from "simple-linear-scale";
-import { ensureChronicle } from "./chronicle";
 
 // TODO: can we extract precision from polkadot.js?
 // BN does not deal with floats, multiply by a 10^6 to prevent more than reasonable precision loss
@@ -19,15 +15,11 @@ export const precisionMultiplier = BigInt(Math.pow(10, 6));
 
 if (!process.env.OWN_PARACHAIN_ID)
   throw new Error("env.OWN_PARACHAIN_ID is not specified");
-if (!process.env.BSX_MULTIPLIER_MIN)
-  throw new Error("env.BSX_MULTIPLIER_MIN is not specified");
-if (!process.env.BSX_MULTIPLIER_MAX)
-  throw new Error("env.BSX_MULTIPLIER_MAX is not specified");
+
+if (!process.env.OWN_TARGET_AUCTION_INDEX)
+  throw new Error("env.OWN_PARACHAIN_ID is not specified");
 
 export const ownParachainId = process.env.OWN_PARACHAIN_ID;
-export const bsxMultiplierMin = BigInt(process.env.BSX_MULTIPLIER_MIN) * precisionMultiplier;
-export const bsxMultiplierMax = BigInt(process.env.BSX_MULTIPLIER_MAX) * precisionMultiplier;
-export const bsxMultiplierNone = BigInt(0);
 
 const ensureHistoricalIncentive = async (
   store: DatabaseManager,
@@ -78,7 +70,7 @@ export const determineIncentives = async (
   blockHeight: bigint
 ) => {
   const ownParachainPromise = getOwnParachain(store);
-  const siblingParachainPromise = getSiblingParachain(store);
+  const siblingParachainPromise = getRivalSibling(store);
 
   const [ownParachain, siblingParachain] = await Promise.all([
     ownParachainPromise,
@@ -133,9 +125,13 @@ const getOwnParachain = async (store: DatabaseManager) => {
   });
 };
 
-// find parachains that are not us, and have not won an auction yet
-const getSiblingParachain = async (store: DatabaseManager) => {
-  return await store.get(Parachain, {
+/**
+ * 
+ * find All parachains that are not us, and have not won an auction yet
+ * @important > return them in descending order according to fundsPledged
+ */ 
+const getSiblings = async (store: DatabaseManager) => {
+  return await store.getMany(Parachain, {
     where: {
       id: Not(ownParachainId),
       hasWonAnAuction: false,
@@ -144,6 +140,42 @@ const getSiblingParachain = async (store: DatabaseManager) => {
       fundsPledged: "DESC",
     },
   });
+};
+
+const getMostRecentAuctionIndex = async (store: DatabaseManager) => {
+  const chronicle = await store.get(Chronicle, {
+    where: {
+      id: 'chronicle'
+    }
+  })
+  return chronicle?.mostRecentAuctionIndex
+};
+
+// get parachain competing with us for the auction index we are targeting
+const getRivalSibling = async (store: DatabaseManager) => {
+
+  const siblingsPromise = getSiblings(store);
+  const currentAuctionIndexPromise = getMostRecentAuctionIndex(store);
+  const [siblings, currentAuctionIndex] = await Promise.all([
+    siblingsPromise,
+    Number(currentAuctionIndexPromise),
+  ]);
+  const ownTargetAuctionIndex = Number(process.env.OWN_TARGET_AUCTION_INDEX);
+  const auctionsUntilOurTarget = Math.max( 0, ownTargetAuctionIndex - currentAuctionIndex )
+  // if ownTargetAuctionIndex - currentAuctionIndex is a negative number,
+  // meaning,  our target auction has passed,
+  // then this code implements the assumption that we are therefore going for
+  // the current auction,  and that our competition is therefore
+  // the sibling with most funds pledged, that is,  the first sibling in the array
+  const siblingCompetingForOurTarget = siblings[auctionsUntilOurTarget]
+
+  return siblingCompetingForOurTarget
+  // becuase siblings are arranged in descending order according to fundsPledged,
+  // we want the sibling that is at the same position in its line as 
+  // our target auction index is in its line
+  // because that is the sibling in place to win that auction ( irrespective of us )
+  // so that sibling is our competition,  and reward modifier(s) are calculated
+  // based on comparing us to them in some way.
 };
 
 export const calculateLeadPercentageRate = (
