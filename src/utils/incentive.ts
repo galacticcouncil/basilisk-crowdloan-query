@@ -8,7 +8,7 @@ import {
 } from "../generated/model";
 import { Not } from "typeorm";
 import { ensure } from "./ensure";
-import { calculateCurrentContributionReward } from "Basilisk-crowdloan-ui/src/lib/calculateRewards"
+import { calculateCurrentContributionReward } from "./calculateRewards"
 import BigNumber from "bignumber.js";
 
 // TODO: can we extract precision from polkadot.js?
