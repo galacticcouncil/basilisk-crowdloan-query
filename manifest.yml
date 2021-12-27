@@ -21,7 +21,7 @@ mappings:
 
 
   # dot crowdloan start
-  range: '[ 7567797, )'
+  range: '[ 8266700, )'
 
 
   # events handled by the processor
@@ -41,7 +41,7 @@ mappings:
     - handler: handlePreBlockGenesis
       filter:
         # production range
-        height: '[7567797, 7567797]'
+        height: '[8266700, 8266700]'
 
   postBlockHooks:
     - handler: handlePostBlock

@@ -12,9 +12,10 @@
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
     "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "resolveJsonModule": true,
   },
-  "jsx": "react-jsx",
   "exclude": [
     "node_modules"
-  ]
+  ],
 }
