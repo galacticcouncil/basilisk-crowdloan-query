@@ -10,8 +10,10 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "moduleResolution": "node",
   },
+  "jsx": "react-jsx",
   "exclude": [
     "node_modules"
   ]

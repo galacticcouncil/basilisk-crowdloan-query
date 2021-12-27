@@ -28,6 +28,7 @@
     "@subsquid/hydra-processor": "^5.0.0-alpha.12",
     "@subsquid/openreader": "^0.2.1",
     "@types/lodash": "^4.14.172",
+    "Basilisk-crowdloan-ui": "github:galacticcouncil/HydraDX-crowdloan-ui#feat/hdx-incentives",
     "dotenv": "^10.0.0",
     "inflected": "^2.1.0",
     "lodash": "^4.17.21",
