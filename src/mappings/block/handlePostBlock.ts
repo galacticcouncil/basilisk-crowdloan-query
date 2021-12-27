@@ -30,7 +30,7 @@ const handlePostBlock = async ({
 
     // create a historical entry for each parachain's funds pledged
     const historicalFundsPledgedQueries = parachains.map(parachain => {
-        return createHistoricalParachainFundsPledged(store, parachain, blockHeight);
+        return createHistoricalParachainFundsPledged(store, parachain, blockHeight, block.timestamp);
     });
 
     // wait until all the historical records are saved

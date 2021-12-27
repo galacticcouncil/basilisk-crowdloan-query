@@ -43,6 +43,7 @@ type HistoricalParachainFundsPledged @entity {
   parachain: Parachain!,
   blockHeight: BigInt!,
   fundsPledged: BigInt!,
+  createdAt: DateTime!
 }
 
 # Auctions have bids, Crowdloans have contributions
