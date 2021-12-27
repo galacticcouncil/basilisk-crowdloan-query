@@ -1,9 +1,8 @@
-import { BN } from '@polkadot/util';
 import { EventContext, StoreContext } from '@subsquid/hydra-common';
 import { Crowdloan as CrowdloanEvents } from '../../types'
 import { encodeAccountId } from '../../utils/account';
 import { createContribution, ensureCrowdloan, updateCrowdloanFunds } from '../../utils/crowdloan';
-import { ownParachainId } from '../../utils/incentive';
+import { calculateContributionRewardBigInt, getLeadPercentageRateForBlockHeight, ownParachainId } from '../../utils/incentive';
 import { updateParachainFundsPledged } from '../../utils/parachain';
 
 /**
@@ -34,7 +33,12 @@ const handleCrowdloanContributed = async ({
 
     // handle individual contributions only for our own parachainId
     if (paraId === ownParachainId) {
-        await createContribution(store, crowdloan, accountId, balance, blockHeight)
+        const previousBlockHeight = blockHeight - BigInt(1);
+        
+        const leadPercentageRate = await getLeadPercentageRateForBlockHeight(previousBlockHeight, store);
+        const contributionReward = calculateContributionRewardBigInt(balance, leadPercentageRate);
+        
+        await createContribution(store, crowdloan, accountId, balance, blockHeight, contributionReward);
     }
 }
 export default handleCrowdloanContributed;

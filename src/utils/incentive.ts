@@ -210,3 +210,44 @@ export const calculateLeadPercentageRate = (
 
   return leadPercentageRateMod;
 };
+
+export const getLeadPercentageRateForBlockHeight = async (
+  blockHeight: bigint,
+  store: DatabaseManager
+): Promise<bigint> => {
+  const historicalIncentive = await store.get(HistoricalIncentive, {
+    where: { blockHeight },
+  });
+  if (!historicalIncentive) {
+    console.log("first contribution detected, can\t calculate reward");
+    return BigInt(0);
+  }
+
+  return historicalIncentive.leadPercentageRate;
+};
+
+export const calculateContributionRewardBigInt = (
+  contributionAmount: bigint,
+  leadPercentageRate: bigint
+) => {
+  /**
+   * DOT has 10 decimals see https://wiki.polkadot.network/docs/redenomination
+   * HDX has 12 decimals 
+   * ContributionAmount is in DOT
+   * ContributionReward needs to be converted to HDX by multiplying with 100
+   * 
+   * eg. contribution of $DOT 25, leadPercentage 15%, yields $HDX 6975
+   * $DOT 250000000000 => $HDX 6970467799975183
+   */
+  const contributionRewardBigNumber = calculateCurrentContributionReward({
+    contributionAmount: contributionAmount.toString(),
+    leadPercentageRate: Number(leadPercentageRate)
+  });
+  const precisionMultiplierBN2E = new BigNumber(100);
+  const contributionRewardWithDecimals =
+    contributionRewardBigNumber.multipliedBy(precisionMultiplierBN2E);
+  // convert float to int by removing decimals
+  const contributionReward = BigInt(contributionRewardWithDecimals.toFixed(0));
+
+  return contributionReward;
+};

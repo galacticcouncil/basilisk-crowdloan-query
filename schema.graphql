@@ -17,6 +17,7 @@ type Contribution @entity {
   # We need to know the contribution blockHeight to subsequently
   # determine what the incentives were at that time
   blockHeight: BigInt!,
+  contributionReward: BigInt!
 }
 
 type Account @entity {
