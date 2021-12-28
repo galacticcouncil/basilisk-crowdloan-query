@@ -276,11 +276,11 @@ export const calculateContributionRewardBigInt = (
    * eg. contribution of $DOT 25, leadPercentage 15%, yields $HDX 6975
    * $DOT 250000000000 => $HDX 6970467799975183
    */
-  const leaderPercentageRateFloat = Number(leadPercentageRate) / Number(precisionMultiplierBN) / 100;
-  
+  const leadPercentageRateFloat = Number(leadPercentageRate) / Number(precisionMultiplierBN) / 100;
+
   const contributionRewardBigNumber = calculateCurrentContributionReward({
     contributionAmount: contributionAmount.toString(),
-    leadPercentageRate: leaderPercentageRateFloat
+    leadPercentageRate: leadPercentageRateFloat
   });
   const precisionMultiplierBN2E = new BigNumber(100);
   const contributionRewardWithDecimals =
