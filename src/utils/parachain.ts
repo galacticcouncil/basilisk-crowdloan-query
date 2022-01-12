@@ -1,8 +1,6 @@
 import { DatabaseManager } from '@subsquid/hydra-common';
 import { Parachain, Crowdloan, HistoricalParachainFundsPledged } from '../generated/model';
 import { ensure } from './ensure';
-import { BN } from '@polkadot/util';
-import { bigint } from '../generated/marshal';
 
 const blocksPerHour = BigInt(600);
 // half an hour a.k.a. 300 blocks at 6 seconds per block
@@ -56,17 +54,20 @@ export const updateParachainFundsPledged = async (
 export const createHistoricalParachainFundsPledged = async (
     store: DatabaseManager,
     parachain: Parachain,
-    blockHeight: bigint
+    blockHeight: bigint,
+    blockTimeStamp: number
 ) => {
     const id = `${parachain.paraId}-${blockHeight}`;
     
+    const createdAt = new Date(blockTimeStamp);
     const historicalParachainFundsPledged = await ensure(
         store,
         HistoricalParachainFundsPledged,
         id, {
             parachain,
             blockHeight,
-            fundsPledged: BigInt(0)
+            fundsPledged: BigInt(0),
+            createdAt: createdAt
         }
     );
 

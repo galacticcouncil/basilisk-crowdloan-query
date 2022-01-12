@@ -1,12 +1,15 @@
 import { DatabaseManager } from "@subsquid/hydra-common";
 import {
   Chronicle,
+  Contribution,
   HistoricalIncentive,
   Incentive,
   Parachain,
 } from "../generated/model";
 import { Not } from "typeorm";
 import { ensure } from "./ensure";
+import { calculateCurrentContributionReward } from "./calculateRewards"
+import BigNumber from "bignumber.js";
 
 // TODO: can we extract precision from polkadot.js?
 // BN does not deal with floats, multiply by a 10^6 to prevent more than reasonable precision loss
@@ -25,13 +28,19 @@ const ensureHistoricalIncentive = async (
   store: DatabaseManager,
   siblingParachain: Parachain | undefined,
   leadPercentageRate: bigint,
-  blockHeight: bigint
+  blockHeight: bigint,
+  totalRewardsDistributed: bigint
 ) => {
   const historicalIncentive = await ensure(
     store,
     HistoricalIncentive,
     blockHeight.toString(),
-    { blockHeight, leadPercentageRate, siblingParachain }
+    { 
+        blockHeight, 
+        leadPercentageRate, 
+        siblingParachain, 
+        totalRewardsDistributed 
+    }
   );
 
   return store.save(historicalIncentive);
@@ -43,11 +52,13 @@ const ensureIncentive = async (
   siblingParachain: Parachain | undefined,
   leadPercentageRate: bigint,
   blockHeight: bigint,
+  totalRewardsDistributed: bigint
 ) => {
   const incentive = await ensure(store, Incentive, incentiveID, {
     blockHeight,
     leadPercentageRate,
     siblingParachain,
+    totalRewardsDistributed
   });
 
   store.save(incentive);
@@ -78,7 +89,10 @@ export const determineIncentives = async (
   ]);
 
   // our parachain didnt register for a crowdloan yet, skip calculating incentives
-  if (!ownParachain) return;
+  if (!ownParachain) {
+    console.log("target parachain not registered, skipping incentive calculation");
+    return;
+  }
 
   const leadPercentageRate = calculateLeadPercentageRate(
     ownParachain,
@@ -90,15 +104,33 @@ export const determineIncentives = async (
     (leadPercentageRate / precisionMultiplierBN).toString(),
     (ownParachain.fundsPledged / precisionMultiplierBN).toString(),
     // TODO undefined handling
-    (siblingParachain?.fundsPledged! / precisionMultiplierBN).toString()
+    (
+      siblingParachain?.fundsPledged! || BigInt(1) / precisionMultiplierBN
+    ).toString()
   );
+
+  // get totalRewards from previous incentive
+  const latestIncentive = await store.get(Incentive, {
+    where: { id: 'incentive'}
+  });
+  const previousTotalRewardsDistributed = latestIncentive?.totalRewardsDistributed || BigInt(0);
+  // sum all contributions in this block
+  const contributionsInBlock = await store.getMany(Contribution, { 
+    where: { blockHeight }
+  });
+  const rewardsInBlock = contributionsInBlock.reduce(
+    (sum, contribution) => sum + contribution.contributionReward, 
+    BigInt(0)
+  );
+  const totalRewardsDistributed = previousTotalRewardsDistributed + rewardsInBlock;
 
   // ensure the historical entity
   await ensureHistoricalIncentive(
     store,
     siblingParachain,
     leadPercentageRate,
-    blockHeight
+    blockHeight,
+    totalRewardsDistributed
   );
 
   // ensure the latest incentives
@@ -107,12 +139,15 @@ export const determineIncentives = async (
     siblingParachain,
     leadPercentageRate,
     blockHeight,
+    totalRewardsDistributed
   ),
+    // TODO: remove if unnecessary
     // update the latest incentives
     await updateIncentive(store, {
       siblingParachain,
       leadPercentageRate,
       blockHeight,
+      totalRewardsDistributed
     });
 };
 
@@ -126,10 +161,10 @@ const getOwnParachain = async (store: DatabaseManager) => {
 };
 
 /**
- * 
+ *
  * find All parachains that are not us, and have not won an auction yet
  * @important > return them in descending order according to fundsPledged
- */ 
+ */
 const getSiblings = async (store: DatabaseManager) => {
   return await store.getMany(Parachain, {
     where: {
@@ -145,33 +180,36 @@ const getSiblings = async (store: DatabaseManager) => {
 const getMostRecentAuctionIndex = async (store: DatabaseManager) => {
   const chronicle = await store.get(Chronicle, {
     where: {
-      id: 'chronicle'
-    }
-  })
-  return chronicle?.mostRecentAuctionIndex
+      id: "chronicle",
+    },
+  });
+  return chronicle?.mostRecentAuctionIndex;
 };
 
 // get parachain competing with us for the auction index we are targeting
 const getRivalSibling = async (store: DatabaseManager) => {
-
   const siblingsPromise = getSiblings(store);
   const currentAuctionIndexPromise = getMostRecentAuctionIndex(store);
-  const [siblings, currentAuctionIndex] = await Promise.all([
+  const [siblings, currentAuctionIndexBigInt] = await Promise.all([
     siblingsPromise,
-    Number(currentAuctionIndexPromise),
+    currentAuctionIndexPromise,
   ]);
+  const currentAuctionIndex = Number(currentAuctionIndexBigInt);
   const ownTargetAuctionIndex = Number(process.env.OWN_TARGET_AUCTION_INDEX);
-  const auctionsUntilOurTarget = Math.max( 0, ownTargetAuctionIndex - currentAuctionIndex )
+  const auctionsUntilOurTarget = Math.max(
+    0,
+    ownTargetAuctionIndex - currentAuctionIndex
+  );
   // if ownTargetAuctionIndex - currentAuctionIndex is a negative number,
   // meaning,  our target auction has passed,
   // then this code implements the assumption that we are therefore going for
   // the current auction,  and that our competition is therefore
   // the sibling with most funds pledged, that is,  the first sibling in the array
-  const siblingCompetingForOurTarget = siblings[auctionsUntilOurTarget]
+  const siblingCompetingForOurTarget = siblings[auctionsUntilOurTarget];
 
-  return siblingCompetingForOurTarget
+  return siblingCompetingForOurTarget;
   // becuase siblings are arranged in descending order according to fundsPledged,
-  // we want the sibling that is at the same position in its line as 
+  // we want the sibling that is at the same position in its line as
   // our target auction index is in its line
   // because that is the sibling in place to win that auction ( irrespective of us )
   // so that sibling is our competition,  and reward modifier(s) are calculated
@@ -185,7 +223,7 @@ export const calculateLeadPercentageRate = (
   // our parachain does not exist yet, no point in calculating incentives
   if (!ownParachain) return BigInt(0);
 
-  // default to 1, to avoit division by 0 errors
+  // default to 1, to avoid division by 0 errors
   const ownParachainFundsPledged =
     (ownParachain?.fundsPledged || BigInt(1)) * precisionMultiplierBN;
   const siblingParachainFundsPledged =
@@ -208,4 +246,47 @@ export const calculateLeadPercentageRate = (
     BigInt(100);
 
   return leadPercentageRateMod;
+};
+
+export const getLeadPercentageRateForBlockHeight = async (
+  blockHeight: bigint,
+  store: DatabaseManager
+): Promise<bigint> => {
+  const historicalIncentive = await store.get(HistoricalIncentive, {
+    where: { blockHeight },
+  });
+  if (!historicalIncentive) {
+    console.log("first contribution detected, can\'t calculate reward");
+    return BigInt(0);
+  }
+
+  return historicalIncentive.leadPercentageRate;
+};
+
+export const calculateContributionRewardBigInt = (
+  contributionAmount: bigint,
+  leadPercentageRate: bigint
+) => {
+  /**
+   * DOT has 10 decimals see https://wiki.polkadot.network/docs/redenomination
+   * HDX has 12 decimals 
+   * ContributionAmount is in DOT
+   * ContributionReward needs to be converted to HDX by multiplying with 100
+   * 
+   * eg. contribution of $DOT 25, leadPercentage 15%, yields $HDX 6975
+   * $DOT 250000000000 => $HDX 6970467799975183
+   */
+  const leadPercentageRateFloat = Number(leadPercentageRate) / Number(precisionMultiplierBN) / 100;
+
+  const contributionRewardBigNumber = calculateCurrentContributionReward({
+    contributionAmount: contributionAmount.toString(),
+    leadPercentageRate: leadPercentageRateFloat
+  });
+  const precisionMultiplierBN2E = new BigNumber(100);
+  const contributionRewardWithDecimals =
+    contributionRewardBigNumber.multipliedBy(precisionMultiplierBN2E);
+  // convert float to int by removing decimals
+  const contributionReward = BigInt(contributionRewardWithDecimals.toFixed(0));
+
+  return contributionReward;
 };

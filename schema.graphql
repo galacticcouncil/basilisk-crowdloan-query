@@ -17,6 +17,7 @@ type Contribution @entity {
   # We need to know the contribution blockHeight to subsequently
   # determine what the incentives were at that time
   blockHeight: BigInt!,
+  contributionReward: BigInt!
 }
 
 type Account @entity {
@@ -42,6 +43,7 @@ type HistoricalParachainFundsPledged @entity {
   parachain: Parachain!,
   blockHeight: BigInt!,
   fundsPledged: BigInt!,
+  createdAt: DateTime!
 }
 
 # Auctions have bids, Crowdloans have contributions
@@ -66,10 +68,12 @@ type Incentive @entity {
   blockHeight: BigInt!,
   leadPercentageRate: BigInt!,
   siblingParachain: Parachain,
+  totalRewardsDistributed: BigInt!
 }
 
 type HistoricalIncentive @entity {
   blockHeight: BigInt!,
   leadPercentageRate: BigInt!
   siblingParachain: Parachain,
+  totalRewardsDistributed: BigInt!
 }

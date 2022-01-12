@@ -1,6 +1,6 @@
 import { EventContext, StoreContext } from '@subsquid/hydra-common';
 import { Bid } from '../../generated/model';
-import { Auctions } from '../../types/auctions';
+import { Auctions } from '../../types/';
 import { ensureBid, updateBid, upsertFundsPledgedWithWinningBids } from '../../utils/auction';
 import { ensure } from '../../utils/ensure';
 

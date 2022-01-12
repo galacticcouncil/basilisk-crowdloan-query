@@ -3,7 +3,7 @@ import { Account, Contribution } from '../generated/model';
 import { ensure } from './ensure';
 import { encodeAddress,decodeAddress } from '@polkadot/util-crypto';
 
-export const encodeAccountId = (accountId: string) => encodeAddress(decodeAddress(accountId), 2) 
+export const encodeAccountId = (accountId: string) => encodeAddress(decodeAddress(accountId), 0) 
 
 /**
  * Find or create an account based on the accountId (= address)
